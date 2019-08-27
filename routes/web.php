@@ -19,6 +19,7 @@ $router->get(
     '/',
     [
         'as' => 'home',
+        'middleware' => 'auth',
         'uses' => 'HelloController@index',
     ]
 );
