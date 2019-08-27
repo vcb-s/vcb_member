@@ -14,3 +14,19 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
+
+$router->get(
+    '/',
+    [
+        'as' => 'home',
+        'uses' => 'HelloController@index',
+    ]
+);
+
+$router->get(
+    'user/{id}',
+    [
+        // 'middleware' => 'auth',
+        'uses' => 'UserController@show',
+    ]
+);
