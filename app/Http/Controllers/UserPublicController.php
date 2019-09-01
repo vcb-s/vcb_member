@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-class UserController extends Controller
+class UserPublicController extends Controller
 {
     public function index($id)
     {
