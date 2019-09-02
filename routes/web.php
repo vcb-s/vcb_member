@@ -11,14 +11,22 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+// $router->get('/', function () use ($router) {
+//     return $router->app->version();
+// });
 
 $router->get(
     '/',
     [
         'as' => 'home',
+        'middleware' => ['tokenIssue'],
+        'uses' => 'HelloController@index',
+    ]
+);
+
+$router->get(
+    '/auth',
+    [
         'middleware' => ['auth'],
         'uses' => 'HelloController@index',
     ]
@@ -27,7 +35,6 @@ $router->get(
 $router->get(
     'user/{id}',
     [
-        // 'middleware' => 'auth',
         'uses' => 'UserController@show',
     ]
 );

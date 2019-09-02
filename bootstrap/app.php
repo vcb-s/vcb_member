@@ -62,7 +62,8 @@ $app->singleton(
 // ]);
 
 $app->routeMiddleware([
-    'auth' => App\Http\Middleware\Authenticate::class
+    'auth' => App\Http\Middleware\Authenticate::class,
+    'tokenIssue' => App\Http\Middleware\AuthIssuer::class
 ]);
 
 /*
