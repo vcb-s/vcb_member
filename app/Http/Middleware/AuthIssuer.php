@@ -36,13 +36,6 @@ class AuthIssuer
             return $response;
         }
 
-        $issueTokenWithUID = $request->headers->get('issueTokenWithUID');
-        $issueRefreshTokenWithUID = $request->headers->get('issueRefreshTokenWithUID');
-
-        if (!$issueTokenWithUID && !$issueRefreshTokenWithUID) {
-            return $response;
-        }
-
         $keyEncryptionAlgorithmManager = new AlgorithmManager([
             new A128GCMKW(),
         ]);
@@ -60,35 +53,11 @@ class AuthIssuer
             'k' => env('APP_KEY'),
         ]);
 
-        $headerCheckerManager = new HeaderCheckerManager(
-            [
-                new AlgorithmChecker(['A128GCMKW']),
-            ],
-            [
-                new JWETokenSupport(),
-            ]
-        );
-
-        $claimCheckerManager = new ClaimCheckerManager(
-            [
-                // new Checker\NotBeforeChecker(),
-                new Checker\ExpirationTimeChecker()
-            ]
-        );
-
-
-
-        // 检查是否需要重新签发
-        if ($shouldIssueNewTokenWithUID === null) {
-            return $response;
-        }
-
         /**
          * 如果需要签发，则需要
          * 1. 重签普通token
          * 2. 检查 RefreshToken 是否在重签时间段内
          */
-        $uid = $shouldIssueNewTokenWithUID;
         $time = time();
 
         $jweBuilder = new JWEBuilder(
@@ -99,11 +68,11 @@ class AuthIssuer
 
         $jwePayload = json_encode([
             'exp' => $time + GlobalVar::ACCESS_TOKEN_EXP_TIME,
-            'uid' => $uid,
+            'uid' => $issueUID,
         ]);
-        $jwe = $jweBuilder
+        $token = $jweBuilder
             ->create()
-            ->withPayload($payload)
+            ->withPayload($jwePayload)
             ->withSharedProtectedHeader([
                 'alg' => 'A128GCMKW',
                 'enc' => 'A128GCM',
@@ -112,12 +81,24 @@ class AuthIssuer
             ->addRecipient($jwk)
             ->build();
 
-        $refreshPayload = json_encode([
-            /** 60天 */
-            'exp' => $time + GlobalVar::REFRESH_TOKEN_EXP_TIME,
-            'uid' => $uid,
-        ]);
+        $response->headers->set('auth-token', $serializor->serialize($token, 0));
 
-        return $response->header('token', $serializor->serialize($jwe, 0));
+        $refreshPayload = json_encode([
+            'exp' => $time + GlobalVar::REFRESH_TOKEN_EXP_TIME,
+            'uid' => $issueUID,
+        ]);
+        $refreshToken = $jweBuilder
+            ->create()
+            ->withPayload($refreshPayload)
+            ->withSharedProtectedHeader([
+                'alg' => 'A128GCMKW',
+                'enc' => 'A128GCM',
+                'zip' => 'DEF'
+            ])
+            ->addRecipient($jwk)
+            ->build();
+        $response->headers->set('refresh-token', $serializor->serialize($refreshToken, 0));
+
+        return $response;
     }
 }

@@ -15,6 +15,7 @@ use Jose\Component\Checker\ClaimCheckerManager;
 use Jose\Component\Checker\HeaderCheckerManager;
 use Jose\Component\Checker\AlgorithmChecker;
 use Jose\Component\Encryption\JWETokenSupport;
+use Jose\Component\Encryption\JWEBuilder;
 
 use Jose\Component\Checker\InvalidClaimException;
 
@@ -30,7 +31,8 @@ class Authenticate
     public function handle(Request $request, Closure $next)
     {
         $shouldCheckRefreshToken = false;
-        $shouldIssueNewTokenWithUID = null;
+        $issueUID = null;
+        $shouldIssueRefreshToken = null;
 
         $token = $request->headers->get('auth-token');
         $refresh_token = $request->headers->get('refresh-token');
@@ -80,8 +82,8 @@ class Authenticate
             $userJWE = $serializor->unserialize($token);
 
             // check方法在不成功的情况下是抛错而不是返回错误……这个东西看不懂
-            $successheader = $headerCheckerManager->check($userJWE, 0, ['alg', 'enc']);
-            $success = $jweDecrypter->decryptUsingKey($userJWE, $jwk, 0);
+            $headerCheckerManager->check($userJWE, 0, ['alg', 'enc']);
+            $jweDecrypter->decryptUsingKey($userJWE, $jwk, 0);
 
             $payload = json_decode($userJWE->getPayload(), true);
             $claimCheckerManager->check($payload);
@@ -101,8 +103,8 @@ class Authenticate
 
             try {
                 $userRefreshJWE = $serializor->unserialize($refresh_token);
-                $successheader = $headerCheckerManager->check($userRefreshJWE, 0, ['alg', 'enc']);
-                $success = $jweDecrypter->decryptUsingKey($userRefreshJWE, $jwk, 0);
+                $headerCheckerManager->check($userRefreshJWE, 0, ['alg', 'enc']);
+                $jweDecrypter->decryptUsingKey($userRefreshJWE, $jwk, 0);
 
                 $refreshTokenPayload = json_decode($userRefreshJWE->getPayload(), true);
 
@@ -113,7 +115,11 @@ class Authenticate
                     throw new Exception('无效refreshToken');
                 }
 
-                $shouldIssueNewTokenWithUID = $refreshTokenPayload['uid'];
+                $issueUID = $refreshTokenPayload['uid'];
+
+                if ($refreshTokenPayload['exp'] - time() < GlobalVar::REFRESH_TOKEN_RE_ISSUE_TIME) {
+                    $shouldIssueRefreshToken = true;
+                }
             } catch (InvalidClaimException $err) {
                 // 如果 刷新token 也过期，返回
                 return response()->json(GlobalVar::EXPIRED_REFRESHTOKEN_ERR_RESPONSE);
@@ -126,9 +132,55 @@ class Authenticate
         // 转发到控制器处理逻辑
         $response = $next($request);
 
-        // 如果需要签发
-        if (!$shouldIssueNewTokenWithUID) {
+        // 如果不需要签发
+        if ($issueUID === null) {
             return $response;
         }
+
+        // 签发短效token
+        $time = time();
+
+        $jweBuilder = new JWEBuilder(
+            $keyEncryptionAlgorithmManager,
+            $contentEncryptionAlgorithmManager,
+            $compressionMethodManager
+        );
+
+        $jwePayload = json_encode([
+            'exp' => $time + GlobalVar::ACCESS_TOKEN_EXP_TIME,
+            'uid' => $issueUID,
+        ]);
+        $token = $jweBuilder
+            ->create()
+            ->withPayload($jwePayload)
+            ->withSharedProtectedHeader([
+                'alg' => 'A128GCMKW',
+                'enc' => 'A128GCM',
+                'zip' => 'DEF'
+            ])
+            ->addRecipient($jwk)
+            ->build();
+
+        $response->headers->set('auth-token', $serializor->serialize($token, 0));
+
+        if ($shouldIssueRefreshToken === true) {
+            $refreshPayload = json_encode([
+                'exp' => $time + GlobalVar::REFRESH_TOKEN_EXP_TIME,
+                'uid' => $issueUID,
+            ]);
+            $refreshToken = $jweBuilder
+                ->create()
+                ->withPayload($refreshPayload)
+                ->withSharedProtectedHeader([
+                    'alg' => 'A128GCMKW',
+                    'enc' => 'A128GCM',
+                    'zip' => 'DEF'
+                ])
+                ->addRecipient($jwk)
+                ->build();
+            $response->headers->set('refresh-token', $serializor->serialize($refreshToken, 0));
+        }
+
+        return $response;
     }
 }
