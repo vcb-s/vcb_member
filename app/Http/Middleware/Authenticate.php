@@ -34,6 +34,9 @@ class Authenticate
         $issueUID = null;
         $shouldIssueRefreshToken = null;
 
+        // 移除内部头
+        $request->headers->remove('uid');
+
         $token = $request->headers->get('auth-token');
         $refresh_token = $request->headers->get('refresh-token');
         // 如果 短效token 不存在，返回
@@ -87,6 +90,8 @@ class Authenticate
 
             $payload = json_decode($userJWE->getPayload(), true);
             $claimCheckerManager->check($payload);
+
+            $request->headers->set('uid', $payload['uid']);
         } catch (InvalidClaimException $err) {
             // 短效token过期了
             $shouldCheckRefreshToken = true;
@@ -116,7 +121,7 @@ class Authenticate
                 }
 
                 $issueUID = $refreshTokenPayload['uid'];
-
+                $request->headers->set('uid', $payload['uid']);
                 if ($refreshTokenPayload['exp'] - time() < GlobalVar::REFRESH_TOKEN_RE_ISSUE_TIME) {
                     $shouldIssueRefreshToken = true;
                 }
