@@ -4,8 +4,45 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1e7bf37408493bb12b84ef25871d9913",
+    "content-hash": "27f781d2d743226f06acc94421857f48",
     "packages": [
+        {
+            "name": "alexeyco/snowflake",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alexeyco/php-snowflake-id.git",
+                "reference": "e2cdd159647ce860774fd2a0484248fb852324c4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alexeyco/php-snowflake-id/zipball/e2cdd159647ce860774fd2a0484248fb852324c4",
+                "reference": "e2cdd159647ce860774fd2a0484248fb852324c4",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SnowFlake\\": ""
+                },
+                "exclude-from-classmap": []
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alexey Popov",
+                    "email": "alexey.popov@gmail.com"
+                }
+            ],
+            "description": "Generate Twitter Snowflake flavoured IDs",
+            "time": "2018-03-09T03:19:27+00:00"
+        },
         {
             "name": "doctrine/inflector",
             "version": "v1.3.0",
