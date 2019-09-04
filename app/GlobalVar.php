@@ -2,8 +2,19 @@
 
 namespace App;
 
+use SnowFlake\Node;
+
 class GlobalVar
 {
+    private static $UUIDInstance = null;
+    private function __construct()
+    {
+    }
+
+    private function __clone()
+    {
+    }
+
     const LACK_AUTH_ERR_RESPONSE = [
         'code' => -1,
         'msg' => '认证信息缺失',
@@ -49,4 +60,15 @@ class GlobalVar
      * RefreshToken重签判定时间
      */
     const REFRESH_TOKEN_RE_ISSUE_TIME = 60 * 60 * 24 * 60 / 2;
+
+    final public static function UUID()
+    {
+        if (self::$UUIDInstance === null) {
+            self::$UUIDInstance = Node::getInstance()
+                ->setEpoch(new \DateTime('2019-09-01 00:00:00'))
+                ->setNode(1);
+        }
+
+        return self::$UUIDInstance->generate()->toString();
+    }
 }
