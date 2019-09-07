@@ -11,13 +11,13 @@
 |
 */
 
-// $router->get(
-//     '/',
-//     [
-//         'as' => 'home',
-//         'uses' => 'HelloController@index',
-//     ]
-// );
+$router->get(
+    '/',
+    [
+        'as' => 'home',
+        'uses' => 'HelloController@index',
+    ]
+);
 
 // $router->get(
 //     '/login',
