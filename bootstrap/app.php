@@ -61,10 +61,10 @@ $app->singleton(
 //     App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
-$app->routeMiddleware([
-    'auth' => App\Http\Middleware\Authenticate::class,
-    'tokenIssue' => App\Http\Middleware\AuthIssuer::class
-]);
+// $app->routeMiddleware([
+//     'auth' => App\Http\Middleware\Authenticate::class,
+//     'tokenIssue' => App\Http\Middleware\AuthIssuer::class
+// ]);
 
 /*
 |--------------------------------------------------------------------------
