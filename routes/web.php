@@ -18,6 +18,12 @@ $router->get(
         'uses' => 'HelloController@index',
     ]
 );
+$router->get(
+    '/home',
+    [
+        'uses' => 'HelloController@index',
+    ]
+);
 
 // $router->get(
 //     '/login',
