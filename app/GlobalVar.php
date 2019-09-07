@@ -44,6 +44,19 @@ class GlobalVar
         'msg' => '本地登录信息封禁',
     ];
 
+    const PARAM_LACK_RESPONSE = [
+        'code' => 1,
+        'msg' => '参数缺失',
+    ];
+    const PARAM_TYPE_ERROR_RESPONSE = [
+        'code' => 2,
+        'msg' => '参数类型错误',
+    ];
+    const PARAM_ERROR_RESPONSE = [
+        'code' => 3,
+        'msg' => '参数错误',
+    ];
+
     /**
      * 常规token过期时间
      *

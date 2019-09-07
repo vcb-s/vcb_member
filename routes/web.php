@@ -11,30 +11,33 @@
 |
 */
 
-// $router->get('/', function () use ($router) {
-//     return $router->app->version();
-// });
+// $router->get(
+//     '/',
+//     [
+//         'as' => 'home',
+//         'uses' => 'HelloController@index',
+//     ]
+// );
+
+// $router->get(
+//     '/login',
+//     [
+//         'as' => 'login',
+//         'middleware' => ['tokenIssue'],
+//         'uses' => 'UserController@login',
+//     ]
+// );
 
 $router->get(
-    '/',
+    '/user/list',
     [
-        'as' => 'home',
-        'middleware' => ['tokenIssue'],
-        'uses' => 'HelloController@index',
+        'uses' => 'UserController@list',
     ]
 );
 
 $router->get(
-    '/auth',
+    '/group/list',
     [
-        'middleware' => ['auth'],
-        'uses' => 'HelloController@index',
-    ]
-);
-
-$router->get(
-    'user/{id}',
-    [
-        'uses' => 'UserController@show',
+        'uses' => 'GroupController@list',
     ]
 );
