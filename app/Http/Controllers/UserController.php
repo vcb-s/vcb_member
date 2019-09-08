@@ -43,10 +43,8 @@ class UserController extends Controller
                 'user.job',
                 'user.order',
                 'user.group',
-                DB::raw('DATE_FORMAT(user.create_at, "%Y-%m-%d") as joinAt'),
+                // DB::raw('DATE_FORMAT(user.create_at, "%Y-%m-%d") as joinAt'),
             );
-
-
 
         $total = $allUser->count();
 
@@ -59,6 +57,8 @@ class UserController extends Controller
             $item->group = array_map(function ($id) {
                 return (int)$id;
             }, explode(',', $item->group));
+
+            $item->order = (int)$item->order || 0;
         });
 
 
