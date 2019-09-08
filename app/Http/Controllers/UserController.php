@@ -23,14 +23,22 @@ class UserController extends Controller
     /** 获取列表 */
     public function list(Request $request)
     {
-        $current = $request->input('current', 1);
-        $pageSize = $request->input('pageSize', 20);
-        $group = (int)$request->input('group');
+        $current = (int)$request->input('current', 1);
+        $pageSize = (int)$request->input('pageSize', 20);
+        $group = (string)(int)$request->input('group');
+        $retired = (bool)$request->input('retired');
+        $sticky = (bool)$request->input('sticky');
 
         $allUser = DB::table('user');
 
         if ($group) {
-            $allUser->where('user.group', 'like', '%' . (string)$group . '%');
+            $allUser->where('user.group', 'like', '%' . $group . '%');
+        }
+        if ($retired) {
+            $allUser->where('user.retired', '>', 0);
+        }
+        if ($sticky) {
+            $allUser->where('user.order', '>', 0);
         }
 
         $allUser
@@ -44,7 +52,9 @@ class UserController extends Controller
                 'user.order',
                 'user.group',
                 // DB::raw('DATE_FORMAT(user.create_at, "%Y-%m-%d") as joinAt'),
-            );
+            )
+            ->orderBy('user.order', 'desc')
+            ->orderBy('user.id', 'asc');
 
         $total = $allUser->count();
 
@@ -58,7 +68,8 @@ class UserController extends Controller
                 return (int)$id;
             }, explode(',', $item->group));
 
-            $item->order = (int)$item->order || 0;
+            $item->order = (int)$item->order;
+            $item->retired = (int)$item->retired;
         });
 
 
@@ -70,69 +81,5 @@ class UserController extends Controller
                 'total' => $total
             ]
         ]);
-    }
-
-    /** 登录 */
-    public function login(Request $request)
-    {
-        $name = (string)$request->input('name');
-        $pw = (string)$request->input('pw');
-
-        if ($name === null || $pw === null) {
-            return response()->json(GlobalVar::PARAM_LACK_RESPONSE);
-        }
-
-        // 如果登录信息没错，就往 request 写入一个 key为uid value为该用户uid 的头
-        $user = DB::table('user')->where('nickname', '=', $name)->get()[0];
-
-        if ($user === null) {
-            return response()->json(GlobalVar::PARAM_ERROR_RESPONSE);
-        }
-
-        if (Hash::check($user->code)) {
-            //
-        }
-
-        $request->headers->set('uid', $user->id);
-
-        return response()->json([
-            'code' => 0,
-            'msg' => '登录成功'
-        ]);
-    }
-
-    /** SSO关联 */
-    public function ssoAuth(Request $request)
-    {
-        $name = (string)$request->input('name');
-        $pw = (string)$request->input('pw');
-
-        if ($name === null || $pw === null) {
-            return response()->json(GlobalVar::PARAM_LACK_RESPONSE);
-        }
-
-        // 如果登录信息没错，就往 request 写入一个 key为uid value为该用户uid 的头
-        $user = DB::table('user')->where('nickname', '=', $name)->get()[0];
-
-        if ($user === null) {
-            return response()->json(GlobalVar::PARAM_ERROR_RESPONSE);
-        }
-
-        if (Hash::check($user->code)) {
-            //
-        }
-
-        $request->headers->set('uid', $user->id);
-
-        return response()->json([
-            'code' => 0,
-            'msg' => '登录成功'
-        ]);
-    }
-
-    /** 修改用户信息 */
-    public function edit(Request $request)
-    {
-        //
     }
 }
