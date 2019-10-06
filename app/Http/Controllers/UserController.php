@@ -74,6 +74,7 @@ class UserController extends Controller
 
 
         return response()->json([
+            'code' => 0,
             'result' => $result,
             'pagination' => [
                 'current' => $current,

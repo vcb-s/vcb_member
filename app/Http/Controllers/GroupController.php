@@ -16,6 +16,7 @@ class GroupController extends Controller
         $result = DB::table('group')->get();
 
         return response()->json([
+            'code' => 0,
             'result' => $result,
         ]);
     }
