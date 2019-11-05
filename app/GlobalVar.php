@@ -57,6 +57,11 @@ class GlobalVar
         'msg' => '参数错误',
     ];
 
+    const ROUTE_NOT_FOUND = [
+        'code' => 404,
+        'msg' => '无效API',
+    ];
+
     /**
      * 常规token过期时间
      *
