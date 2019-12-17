@@ -1,0 +1,9 @@
+[database]
+server = ""
+ports = 0
+user = ''
+pass = ''
+
+[jwt]
+mac = ""
+encryption = ""
