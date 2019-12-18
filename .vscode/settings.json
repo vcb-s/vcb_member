@@ -1,5 +1,20 @@
 {
-  "editor.renderWhitespace": "boundary",
-  "editor.tabSize": 4,
-  "phpcs.standard": "PSR2"
+    "editor.renderWhitespace": "boundary",
+    "editor.tabSize": 4,
+    "go.useLanguageServer": true,
+    "go.languageServerExperimentalFeatures": {
+        "format": true,
+        "autoComplete": true,
+        "rename": true,
+        "goToDefinition": true,
+        "hover": true,
+        "signatureHelp": true,
+        "goToTypeDefinition": true,
+        "goToImplementation": true,
+        "documentSymbols": true,
+        "workspaceSymbols": true,
+        "findReferences": true,
+        "diagnostics": true,
+        "documentLink": true
+      }
 }

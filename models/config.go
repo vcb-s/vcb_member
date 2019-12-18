@@ -1,11 +1,37 @@
 package models
 
-type song struct {
-	Name     string
-	Duration int
+import (
+	"io/ioutil"
+
+	"github.com/pelletier/go-toml"
+)
+
+type conf struct {
+	Database struct {
+		Host  string
+		Ports int
+		User  string
+		Pass  string
+	}
+	Jwt struct {
+		mac        string
+		encryption string
+	}
 }
 
-// Songs config
-type Songs struct {
-	Song []song
+// Conf 配置内容
+var Conf conf
+
+func init() {
+	tomlFile, err := ioutil.ReadFile("./config.toml")
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = toml.Unmarshal(tomlFile, &Conf)
+
+	if err != nil {
+		panic(err)
+	}
 }

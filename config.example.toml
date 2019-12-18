@@ -1,5 +1,5 @@
 [database]
-server = ""
+host = ""
 ports = 0
 user = ''
 pass = ''
