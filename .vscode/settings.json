@@ -2,6 +2,7 @@
     "editor.renderWhitespace": "boundary",
     "editor.tabSize": 4,
     "go.useLanguageServer": true,
+    "go.autocompleteUnimportedPackages": true,
     "go.languageServerExperimentalFeatures": {
         "format": true,
         "autoComplete": true,
