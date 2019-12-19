@@ -14,8 +14,8 @@ type conf struct {
 		Pass  string
 	}
 	Jwt struct {
-		mac        string
-		encryption string
+		Mac        string
+		Encryption string
 	}
 }
 
