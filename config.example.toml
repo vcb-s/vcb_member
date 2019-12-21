@@ -1,9 +1,13 @@
 [database]
 host = ""
-ports = 0
+port = 0
 user = ''
 pass = ''
+dbname = ''
 
 [jwt]
 mac = ""
 encryption = ""
+
+[server]
+port = 0

@@ -1,66 +1,48 @@
 package main
 
 import (
-	"encoding/base64"
-	"encoding/hex"
+	_ "github.com/go-sql-driver/mysql"
+
 	"fmt"
 	"vcb_member/helper"
 	"vcb_member/models"
 )
 
 func main() {
-	uid := helper.GenID()
+	fmt.Println("数据库连接 ---------")
+	var total int
+	_, err := models.GetDBHelper().SQL(`
+		select count(id) from user_group;
+	`).Get(&total)
 
-	fmt.Println("models.Conf -------------------")
-	fmt.Println(models.Conf)
-	fmt.Println("uid -------------------")
-	fmt.Println(uid)
-
-	fmt.Println("GenToken -------------------")
-	token, err := helper.GenToken(uid)
 	if err != nil {
-		fmt.Println(err.Error())
 		panic(err)
 	}
-	fmt.Println(token)
 
-	fmt.Println("GenRefreshToken -------------------")
-	token, err = helper.GenRefreshToken(uid)
+	fmt.Println(total)
+
+	fmt.Println("签发 refreshToken --------------")
+	tokenString, err := helper.GenRefreshToken("hhvagrhhxd")
+	token := []byte(tokenString)
+	tokenString, err = helper.ReGenRefreshToken(token)
+	fmt.Println(tokenString)
+	uid, err := helper.CheckRefreshToken(token)
 	if err != nil {
-		fmt.Println(err.Error())
 		panic(err)
 	}
-	fmt.Println(token)
+	if uid == "" {
+		fmt.Println("检验失败")
+		return
+	}
 
-	fmt.Println("GenCiphertext -------------------")
-	result, err := helper.GenCiphertext(uid)
+	fmt.Println("校验成功")
+	fmt.Println("新旧token：--------")
+	fmt.Println(tokenString)
+	fmt.Println("---------------")
+	tokenString, err = helper.ReGenRefreshToken(token)
 	if err != nil {
-		fmt.Println(err.Error())
 		panic(err)
 	}
-	fmt.Println(result.Iv, result.Ciphertext)
+	fmt.Println(tokenString)
 
-	fmt.Println("GenHashtext -------------------")
-	fmt.Println(helper.GenHashtext(uid))
-
-	fmt.Println("GenIVByte -------------------")
-	nonce, err := helper.GenIVByte()
-	if err != nil {
-		fmt.Println(err.Error())
-		panic(err)
-	}
-	base64Nonce := base64.URLEncoding.EncodeToString(nonce)
-	hexNonce := hex.EncodeToString(nonce)
-	fmt.Println(base64Nonce, len(base64Nonce))
-	fmt.Println(hexNonce, len(hexNonce))
-
-	fmt.Println("GenPass -------------------")
-	passUID, err := helper.GenPass(uid)
-	if err != nil {
-		fmt.Println(err.Error())
-		panic(err)
-	}
-	fmt.Println(passUID)
-	fmt.Println("CheckPass -------------------")
-	fmt.Println(helper.CheckPass(uid, passUID))
 }

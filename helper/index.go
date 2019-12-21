@@ -49,12 +49,32 @@ func GenToken(uid string) (string, error) {
 	return string(token), nil
 }
 
+// CheckToken 检查jwt
+func CheckToken(tokenString string) (bool, string) {
+	claims, err := jwt.HMACCheck([]byte(tokenString), signKey)
+	if err != nil {
+		return false, ""
+	}
+
+	if !claims.Valid((time.Now())) {
+		return false, claims.Audiences[0]
+	}
+
+	return true, claims.Audiences[0]
+}
+
 // GenRefreshToken 获取一个 refreshjwt
 func GenRefreshToken(uid string) (string, error) {
 	var claims jwt.Claims
 	now := time.Now().Round(time.Second)
 	tokenID := GenID()
+
 	// 记录到用户的token字段，refresh的时候读取验证
+	user := models.User{TokenID: tokenID}
+	_, err := models.GetDBHelper().Table("user").Where("id = ?", uid).Update(&user)
+	if err != nil {
+		return "", err
+	}
 
 	claims.ID = tokenID
 	claims.Issuer = jwtIssuer
@@ -68,6 +88,49 @@ func GenRefreshToken(uid string) (string, error) {
 	}
 
 	return string(token), nil
+}
+
+// ReGenRefreshToken 重签 refreshjwt, 不做有效验证，故确定有效后才来重签
+func ReGenRefreshToken(originToken []byte) (string, error) {
+	claims, err := jwt.HMACCheck(originToken, signKey)
+	if err != nil {
+		return "", err
+	}
+	now := time.Now().Round(time.Second)
+
+	claims.Issued = jwt.NewNumericTime(now)
+	claims.Expires = jwt.NewNumericTime(now.Add(jwtRefreshExpires))
+
+	token, err := claims.HMACSign(jwt.HS256, signKey)
+	if err != nil {
+		return "", err
+	}
+
+	return string(token), nil
+}
+
+// CheckRefreshToken 检查jwt
+func CheckRefreshToken(token []byte) (string, error) {
+	claims, err := jwt.HMACCheck(token, signKey)
+	if err != nil {
+		return "", err
+	}
+
+	uid := claims.Audiences[0]
+
+	if !claims.Valid((time.Now())) {
+		return "", nil
+	}
+
+	// 查询用户的 tokenID 字段
+	tokenID := claims.ID
+	var user models.User
+	hasValue, err := models.GetDBHelper().Table("user").Where("id = ? and jwt_id = ?", uid, tokenID).Get(&user)
+	if err != nil || hasValue == false {
+		return "", err
+	}
+
+	return uid, nil
 }
 
 // GenPass 获取一个安全的密码Hash
