@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"sync"
 
+	// main包需要用到config 所有要在这里引入
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"github.com/pelletier/go-toml"
 )
@@ -20,6 +22,9 @@ type conf struct {
 	Jwt struct {
 		Mac        string
 		Encryption string
+	}
+	Server struct {
+		Port int
 	}
 }
 

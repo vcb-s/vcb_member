@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"io"
 	"time"
 	"vcb_member/models"
@@ -24,6 +25,12 @@ const jwtRefreshExpires = 7 * 24 * time.Hour
 
 var signKey = []byte(models.Conf.Jwt.Mac)
 var encryptKey = []byte(models.Conf.Jwt.Encryption)
+
+// ErrorExpired jwt过期
+const ErrorExpired = "Expired"
+
+// ErrorInvalid jwt无效
+const ErrorInvalid = "Invalid"
 
 // GenID 获取一个雪花ID
 func GenID() string {
@@ -50,17 +57,17 @@ func GenToken(uid string) (string, error) {
 }
 
 // CheckToken 检查jwt
-func CheckToken(tokenString string) (bool, string) {
-	claims, err := jwt.HMACCheck([]byte(tokenString), signKey)
+func CheckToken(tokenString []byte) (string, error) {
+	claims, err := jwt.HMACCheck(tokenString, signKey)
 	if err != nil {
-		return false, ""
+		return "", err
 	}
 
 	if !claims.Valid((time.Now())) {
-		return false, claims.Subject
+		return "", errors.New(ErrorExpired)
 	}
 
-	return true, claims.Subject
+	return claims.Subject, nil
 }
 
 // GenRefreshToken 获取一个 refreshjwt
@@ -119,15 +126,18 @@ func CheckRefreshToken(token []byte) (string, error) {
 	uid := claims.Subject
 
 	if !claims.Valid((time.Now())) {
-		return "", nil
+		return "", errors.New(ErrorExpired)
 	}
 
 	// 查询用户的 tokenID 字段
 	tokenID := claims.ID
 	var user models.User
 	hasValue, err := models.GetDBHelper().Table("user").Where("id = ? and jwt_id = ?", uid, tokenID).Get(&user)
-	if err != nil || hasValue == false {
+	if err != nil {
 		return "", err
+	}
+	if !hasValue {
+		return "", errors.New(ErrorInvalid)
 	}
 
 	return uid, nil
