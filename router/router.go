@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Router 全局路由处理
 var Router *gin.Engine
 
 func init() {
@@ -18,9 +19,12 @@ func init() {
 	// public := Router.Group("/admin")
 	// public.GET("/", service.list)
 
+	// 后台
 	admin := Router.Group("/admin")
 	// 登录验证中间件
 	admin.Use(service.AuthMiddleware)
-	// 是否登录
-	// admin.GET("/isLogin", service.IsLogin)
+	{
+		// 是否登录
+		// admin.GET("/isLogin", service.IsLogin)
+	}
 }

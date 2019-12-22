@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
-	"vcb_member/conf"
-	"vcb_member/router"
+	"os"
+	"os/signal"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	"vcb_member/conf"
+	"vcb_member/router"
 )
 
 func main() {
@@ -17,9 +23,20 @@ func main() {
 	}
 
 	go func() {
-		// service connections
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		err := server.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
 			fmt.Println(err.Error())
 		}
 	}()
+
+	// 退出监听
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := server.Shutdown(ctx)
+	if err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
 }
