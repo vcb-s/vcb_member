@@ -1,3 +1,8 @@
+#### 模块初始化顺序
+`conf -> helper -> router -> service -> models -> [whatever.go] -> main`
+
+每个文件只能依赖比自己先初始化的文件，不能依赖比自己晚初始化的文件，否则会出现依赖循环文件。
+
 #### depend for vscode
 1. 安装扩展依赖：
 ```bash
