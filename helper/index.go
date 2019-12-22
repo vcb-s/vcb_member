@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"time"
+	"vcb_member/conf"
 	"vcb_member/models"
 
 	"github.com/btnguyen2k/olaf"
@@ -23,8 +24,8 @@ const jwtIssuer = "vcb-member"
 const jwtExpires = 5 * time.Minute
 const jwtRefreshExpires = 7 * 24 * time.Hour
 
-var signKey = []byte(models.Conf.Jwt.Mac)
-var encryptKey = []byte(models.Conf.Jwt.Encryption)
+var signKey = []byte(conf.Main.Jwt.Mac)
+var encryptKey = []byte(conf.Main.Jwt.Encryption)
 
 // ErrorExpired jwt过期
 const ErrorExpired = "Expired"

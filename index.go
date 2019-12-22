@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"vcb_member/models"
+	"vcb_member/conf"
 	"vcb_member/router"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	addr := fmt.Sprintf(":%d", models.Conf.Server.Port)
+	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{
 		Addr:    addr,
 		Handler: router.Router,
