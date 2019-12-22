@@ -39,7 +39,7 @@ func GenToken(uid string) (string, error) {
 	claims.Issuer = jwtIssuer
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtExpires))
-	claims.Audiences = []string{uid}
+	claims.Subject = uid
 
 	token, err := claims.HMACSign(jwt.HS256, signKey)
 	if err != nil {
@@ -57,10 +57,10 @@ func CheckToken(tokenString string) (bool, string) {
 	}
 
 	if !claims.Valid((time.Now())) {
-		return false, claims.Audiences[0]
+		return false, claims.Subject
 	}
 
-	return true, claims.Audiences[0]
+	return true, claims.Subject
 }
 
 // GenRefreshToken 获取一个 refreshjwt
@@ -80,7 +80,7 @@ func GenRefreshToken(uid string) (string, error) {
 	claims.Issuer = jwtIssuer
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtRefreshExpires))
-	claims.Audiences = []string{uid}
+	claims.Subject = uid
 
 	token, err := claims.HMACSign(jwt.HS256, signKey)
 	if err != nil {
@@ -90,7 +90,7 @@ func GenRefreshToken(uid string) (string, error) {
 	return string(token), nil
 }
 
-// ReGenRefreshToken 重签 refreshjwt, 不做有效验证，故确定有效后才来重签
+// ReGenRefreshToken 重签 refreshjwt
 func ReGenRefreshToken(originToken []byte) (string, error) {
 	claims, err := jwt.HMACCheck(originToken, signKey)
 	if err != nil {
@@ -116,7 +116,7 @@ func CheckRefreshToken(token []byte) (string, error) {
 		return "", err
 	}
 
-	uid := claims.Audiences[0]
+	uid := claims.Subject
 
 	if !claims.Valid((time.Now())) {
 		return "", nil
