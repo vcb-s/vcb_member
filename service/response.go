@@ -88,3 +88,9 @@ type userListResponseRes struct {
 	Order    int    `json:"order" form:"order" xorm:"order"`
 	Group    string `json:"group" form:"group" xorm:"group"`
 }
+
+// 用户列表
+type userGroupListResponseRes struct {
+	ID   string `json:"id" form:"id" xorm:"id"`
+	Name string `json:"name" form:"name" xorm:"name"`
+}

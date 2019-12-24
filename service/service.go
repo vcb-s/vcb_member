@@ -49,10 +49,26 @@ func UserList(c *gin.Context) {
 
 // GroupList 组别列表
 func GroupList(c *gin.Context) {
+	var (
+		j JSONData
+	)
+
+	userGroupList := make([]userGroupListResponseRes, 0)
+	var sqlBuilder = models.GetDBHelper().Table("user_group")
+
+	total, err := sqlBuilder.FindAndCount(&userGroupList)
+	if err != nil {
+		fmt.Println(err)
+		j.ServerError(c)
+		return
+	}
+
+	j.Data = map[string]interface{}{"res": userGroupList, "total": total}
+	j.ResponseOK(c)
 	return
 }
 
-// Login 组别列表
+// Login 登录
 func Login(c *gin.Context) {
 	return
 }
