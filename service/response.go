@@ -19,10 +19,10 @@ func (j *JSONData) NoDataResponse(c *gin.Context) {
 	c.JSON(http.StatusOK, j)
 }
 
-// BadRequest 错误请求
+// BadRequest 参数错误
 func (j *JSONData) BadRequest(c *gin.Context) {
 	j.Code = http.StatusBadRequest
-	j.Message = "错误请求"
+	j.Message = "参数错误"
 	c.JSON(http.StatusOK, j)
 }
 
@@ -66,4 +66,25 @@ func (j *JSONData) TimeOut(c *gin.Context) {
 	j.Code = http.StatusRequestTimeout
 	j.Message = ""
 	c.JSON(http.StatusOK, j)
+}
+
+// 自定义响应结构
+
+// 分页结构
+type pagination struct {
+	Current  int `json:"current" form:"current"`
+	PageSize int `json:"pageSize" form:"pageSize"`
+	Total    int `json:"total" form:"total"`
+}
+
+// 用户列表
+type userListResponseRes struct {
+	ID       string `json:"id" form:"id" xorm:"id"`
+	Retired  int    `json:"retired" form:"retired" xorm:"retired"`
+	Avast    string `json:"avast" form:"avast" xorm:"avast"`
+	Bio      string `json:"bio" form:"bio" xorm:"bio"`
+	Nickname string `json:"nickname" form:"nickname" xorm:"nickname"`
+	Job      string `json:"job" form:"job" xorm:"job"`
+	Order    int    `json:"order" form:"order" xorm:"order"`
+	Group    string `json:"group" form:"group" xorm:"group"`
 }
