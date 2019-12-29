@@ -77,16 +77,16 @@ func CheckToken(tokenString []byte) (string, error) {
 func GenRefreshToken(uid string) (string, error) {
 	var claims jwt.Claims
 	now := time.Now().Round(time.Second)
-	tokenID := GenID()
+	jwtID := GenID()
 
 	// 记录到用户的token字段，refresh的时候读取验证
-	user := models.User{TokenID: tokenID}
+	user := models.User{JwtID: jwtID}
 	_, err := models.GetDBHelper().Table("user").Where("id = ?", uid).Update(&user)
 	if err != nil {
 		return "", err
 	}
 
-	claims.ID = tokenID
+	claims.ID = jwtID
 	claims.Issuer = jwtIssuer
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtRefreshExpires))

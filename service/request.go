@@ -14,7 +14,6 @@ type loginReq struct {
 	Password string `json:"password" form:"password" binding:"required"`
 }
 type resetPassReq struct {
-	UID      string `json:"uid" form:"uid" binding:"required"`
-	Current  string `json:"current" form:"current" binding:"required"`
-	Password string `json:"password" form:"password" binding:"required"`
+	Current     string `json:"current" form:"current" binding:"required"`
+	NewPassword string `json:"new" form:"new" binding:"required"`
 }

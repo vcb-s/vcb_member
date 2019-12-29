@@ -28,7 +28,7 @@ func init() {
 	adminWithAuth := root.Group("/admin")
 	adminWithAuth.Use(service.AuthMiddleware)
 	{
+		adminWithAuth.GET("/resetPass", service.ResetPass)
 		adminWithAuth.GET("/resetPassForSA", service.ResetPassForSuperAdmin)
 	}
-
 }

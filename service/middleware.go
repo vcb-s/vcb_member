@@ -5,10 +5,10 @@ import (
 	"vcb_member/helper"
 )
 
-var sercertUIDHeaderKey string
+var uidHeaderKey string
 
 func init() {
-	sercertUIDHeaderKey = helper.GenID()
+	uidHeaderKey = helper.GenID()
 }
 
 // AuthMiddleware 登录检查以及token重签
@@ -36,7 +36,7 @@ func AuthMiddleware(c *gin.Context) {
 			return
 		}
 	}
-	c.Request.Header.Set(sercertUIDHeaderKey, uid)
+	c.Request.Header.Set(uidHeaderKey, uid)
 
 	c.Next()
 

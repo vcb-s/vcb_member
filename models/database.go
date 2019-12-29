@@ -19,7 +19,7 @@ type User struct {
 	Order      int    `xorm:"order"`
 	Password   string `xorm:"password"`
 	Group      string `xorm:"group"`
-	TokenID    string `xorm:"jwt_id"`
+	JwtID      string `xorm:"jwt_id"`
 	SuperAdmin int    `xorm:"super_admin"`
 }
 

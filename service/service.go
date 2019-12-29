@@ -1,10 +1,7 @@
 package service
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"math/rand"
-	"strconv"
 
 	"vcb_member/helper"
 	"vcb_member/models"
@@ -17,7 +14,7 @@ func UserList(c *gin.Context) {
 		req userListReq
 	)
 	if err := c.ShouldBind(&req); err != nil {
-		fmt.Println(err)
+		j.Message = err.Error()
 		j.BadRequest(c)
 		return
 	}
@@ -39,13 +36,12 @@ func UserList(c *gin.Context) {
 
 	total, err := sqlBuilder.FindAndCount(&userList)
 	if err != nil {
-		fmt.Println(err)
+		j.Message = err.Error()
 		j.ServerError(c)
 		return
 	}
 
 	j.Data = map[string]interface{}{"res": userList, "total": total}
-
 	j.ResponseOK(c)
 	return
 }
@@ -61,7 +57,7 @@ func GroupList(c *gin.Context) {
 
 	total, err := sqlBuilder.FindAndCount(&userGroupList)
 	if err != nil {
-		fmt.Println(err)
+		j.Message = err.Error()
 		j.ServerError(c)
 		return
 	}
@@ -79,15 +75,15 @@ func Login(c *gin.Context) {
 		user models.User
 	)
 	if err := c.ShouldBind(&req); err != nil {
-		fmt.Println(err)
+		j.Message = err.Error()
 		j.BadRequest(c)
 		return
 	}
 
 	hasUser, err := models.GetDBHelper().Table("user").Where("id = ?", req.UID).Get(&user)
 	if err != nil {
-		fmt.Println(err)
-		j.BadRequest(c)
+		j.Message = err.Error()
+		j.ServerError(c)
 		return
 	}
 
@@ -104,20 +100,21 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if !helper.CheckPass(req.Password, user.Password) {
-		j.Message = user.Password
-		j.NotAcceptable(c)
+	if !helper.CheckPassHash(req.Password, user.Password) {
+		j.FailAuth(c)
 		return
 	}
 
 	// 签发密钥
 	token, err := helper.GenToken(user.ID)
 	if err != nil {
+		j.Message = err.Error()
 		j.ServerError(c)
 		return
 	}
 	refreshToken, err := helper.GenRefreshToken(user.ID)
 	if err != nil {
+		j.Message = err.Error()
 		j.ServerError(c)
 		return
 	}
@@ -126,8 +123,59 @@ func Login(c *gin.Context) {
 	c.Writer.Header().Set("x-refreshToken", refreshToken)
 
 	j.ResponseOK(c)
+	return
+}
 
-	// 密码字段不为空则进行验证
+// ResetPass 重设自己的密码
+func ResetPass(c *gin.Context) {
+	var (
+		j    JSONData
+		req  resetPassReq
+		user models.User
+	)
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	uid := c.Request.Header.Get(uidHeaderKey)
+
+	hasValue, err := models.GetDBHelper().Table("user").Where("id = ?", uid).Get(&user)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+
+	if !hasValue {
+		j.BadRequest(c)
+		return
+	}
+
+	if !helper.CheckPassHash(req.Current, user.Password) {
+		j.Message = "密码错误"
+		j.FailAuth(c)
+		return
+	}
+
+	newHash, err := helper.CalcPassHash(req.NewPassword)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+
+	user.Password = newHash
+	user.JwtID = ""
+	_, err = models.GetDBHelper().Table("user").Where("id = ?", uid).Cols("password, jwt_id").Update(&user)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+
+	j.ResponseOK(c)
 	return
 }
 
@@ -140,42 +188,47 @@ func ResetPassForSuperAdmin(c *gin.Context) {
 		adminUser models.User
 	)
 	if err := c.ShouldBind(&req); err != nil {
-		fmt.Println(err)
+		j.Message = err.Error()
 		j.BadRequest(c)
 		return
 	}
 
-	loginUID := c.Request.Header.Get(sercertUIDHeaderKey)
+	loginUID := c.Request.Header.Get(uidHeaderKey)
 
 	_, err := models.GetDBHelper().Table("user").Where("id = ?", loginUID).Get(&adminUser)
 	hasUser, err := models.GetDBHelper().Table("user").Where("id = ?", req.UID).Get(&user)
-	if err != nil || adminUser.SuperAdmin != 1 {
-		j.FailAuth(c)
-		return
-	}
-
-	if !hasUser {
-		j.Message = "用户不存在"
-		j.NotAcceptable(c)
-		return
-	}
-
-	// 产生一个明文密钥
-	var newPass string
-	for i := 0; i < 8; i++ {
-		newPass += strconv.Itoa(rand.Intn(9))
-	}
-
-	newPassword, err := helper.GenPass(newPass)
 	if err != nil {
 		j.Message = err.Error()
 		j.ServerError(c)
 		return
 	}
 
-	user.Password = newPassword
+	if adminUser.SuperAdmin != 1 {
+		j.Message = "您不是管理员"
+		j.FailAuth(c)
+		return
+	}
 
-	_, err = models.GetDBHelper().Table("user").Where("id = ?", req.UID).Cols("password").Update(&user)
+	if !hasUser {
+		j.Message = "用户不存在"
+		j.ServerError(c)
+		return
+	}
+
+	// 产生一个随机密码
+	var newPass string = helper.GenRandPass()
+
+	newHash, err := helper.CalcPassHash(newPass)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+
+	user.Password = newHash
+	user.JwtID = ""
+
+	_, err = models.GetDBHelper().Table("user").Where("id = ?", req.UID).Cols("password, jwt_id").Update(&user)
 	if err != nil {
 		j.Message = err.Error()
 		j.ServerError(c)
