@@ -1,7 +1,9 @@
 #### 模块初始化顺序
-`conf -> helper -> router -> service -> models -> [whatever.go] -> main`
+`inital -> conf -> helper -> router -> service -> models -> [whatever.go] -> main`
 
-每个文件只能依赖比自己先初始化的文件，不能依赖比自己晚初始化的文件，否则会出现依赖循环文件。
+init的运行顺序是 按照import的顺序运行。
+如果自己也有init，自己的init是最后运行的。
+每个文件只能依赖比自己先初始化的文件，否则会出现依赖循环文件。
 
 #### depend for vscode
 1. 安装扩展依赖：

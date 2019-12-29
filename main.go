@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "vcb_member/inital"
 
 	"vcb_member/conf"
 	"vcb_member/router"

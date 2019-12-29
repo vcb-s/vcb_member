@@ -151,7 +151,8 @@ func GenPass(pass string) (string, error) {
 
 // CheckPass 校验密码
 func CheckPass(pass string, hash string) bool {
-	if argon.Verify(pass, hash) != nil {
+	err := argon.Verify(pass, hash)
+	if err != nil {
 		return false
 	}
 
