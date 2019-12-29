@@ -36,9 +36,12 @@ func AuthMiddleware(c *gin.Context) {
 			return
 		}
 	}
-	c.Set(sercertUIDHeaderKey, uid)
+	c.Request.Header.Set(sercertUIDHeaderKey, uid)
 
 	c.Next()
+
+	/** token重签间隔：每次刷新 */
+	/** @TODO refreshToken重签间隔：常规token的过期时间 * 2 */
 
 	var newRefreshToken string
 	newToken, err := helper.GenToken(uid)
