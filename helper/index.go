@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	mathRand "math/rand"
+	"strconv"
 	"time"
 	"vcb_member/conf"
 	"vcb_member/models"
@@ -144,13 +146,13 @@ func CheckRefreshToken(token []byte) (string, error) {
 	return uid, nil
 }
 
-// GenPass 获取一个安全的密码Hash
-func GenPass(pass string) (string, error) {
+// CalcPassHash 获取一个安全的密码Hash
+func CalcPassHash(pass string) (string, error) {
 	return argon.Hash(pass)
 }
 
-// CheckPass 校验密码
-func CheckPass(pass string, hash string) bool {
+// CheckPassHash 校验密码
+func CheckPassHash(pass string, hash string) bool {
 	err := argon.Verify(pass, hash)
 	if err != nil {
 		return false
@@ -166,6 +168,16 @@ func GenIVByte() ([]byte, error) {
 	_, err := io.ReadFull(rand.Reader, nonce)
 
 	return nonce, err
+}
+
+// GenRandPass 产生一个8位随机数字密码
+func GenRandPass() string {
+	var newPass string
+	for i := 0; i < 8; i++ {
+		newPass += strconv.Itoa(mathRand.Intn(9))
+	}
+
+	return newPass
 }
 
 // GenHashtext 加密给定字符串
