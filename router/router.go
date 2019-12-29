@@ -25,4 +25,12 @@ func init() {
 	{
 		admin.GET("/login", service.Login)
 	}
+
+	// 带登录验证的部分
+	adminWithAuth := root.Group("/admin")
+	adminWithAuth.Use(service.AuthMiddleware)
+	{
+		adminWithAuth.GET("/resetPassForSA", service.ResetPassForSuperAdmin)
+	}
+
 }

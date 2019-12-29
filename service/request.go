@@ -9,3 +9,12 @@ type userListReq struct {
 	Current  int `json:"current" form:"current" binding:"required,min=1"`
 	PageSize int `json:"pageSize" form:"pageSize" binding:"required,min=1,max=20"`
 }
+type loginReq struct {
+	UID      string `json:"uid" form:"uid" binding:"required"`
+	Password string `json:"password" form:"password" binding:"required"`
+}
+type resetPassReq struct {
+	UID      string `json:"uid" form:"uid" binding:"required"`
+	Current  string `json:"current" form:"current" binding:"required"`
+	Password string `json:"password" form:"password" binding:"required"`
+}

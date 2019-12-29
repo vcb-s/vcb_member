@@ -10,16 +10,17 @@ import (
 
 // User 用户表
 type User struct {
-	ID       string `xorm:"id"`
-	Retired  int    `xorm:"retired"`
-	Avast    string `xorm:"avast"`
-	Bio      string `xorm:"bio"`
-	Nickname string `xorm:"nickname"`
-	Job      string `xorm:"job"`
-	Order    int    `xorm:"order"`
-	Password string `xorm:"password"`
-	Group    string `xorm:"group"`
-	TokenID  string `xorm:"jwt_id"`
+	ID         string `xorm:"id"`
+	Retired    int    `xorm:"retired"`
+	Avast      string `xorm:"avast"`
+	Bio        string `xorm:"bio"`
+	Nickname   string `xorm:"nickname"`
+	Job        string `xorm:"job"`
+	Order      int    `xorm:"order"`
+	Password   string `xorm:"password"`
+	Group      string `xorm:"group"`
+	TokenID    string `xorm:"jwt_id"`
+	SuperAdmin int    `xorm:"super_admin"`
 }
 
 // UserGroup 组别表
@@ -37,7 +38,6 @@ var instance *xorm.Engine
 var once sync.Once
 
 func init() {
-
 	GetDBHelper()
 }
 
