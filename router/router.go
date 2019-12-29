@@ -21,14 +21,21 @@ func init() {
 	// 后台
 	admin := root.Group("/admin")
 	{
+		// 登录
 		admin.GET("/login", service.Login)
+		// @TODO 关联登录
+		// admin.GET("/loginWithWP", service.Login)
 	}
 
 	// 带登录验证的部分
 	adminWithAuth := root.Group("/admin")
 	adminWithAuth.Use(service.AuthMiddleware)
 	{
+		// 重置自己的密码
 		adminWithAuth.GET("/resetPass", service.ResetPass)
+		// 重置他人的密码
 		adminWithAuth.GET("/resetPassForSA", service.ResetPassForSuperAdmin)
+		// @TODO 绑定主站账号
+		// adminWithAuth.GET("/createWPBind", service.ResetPassForSuperAdmin)
 	}
 }
