@@ -20,8 +20,6 @@ func init() {
 
 	// 后台
 	admin := root.Group("/admin")
-	// 登录验证中间件
-	admin.Use(service.AuthMiddleware)
 	{
 		admin.GET("/login", service.Login)
 	}
