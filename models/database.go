@@ -2,10 +2,10 @@ package models
 
 import (
 	"fmt"
-	"sync"
-	"vcb_member/conf"
-
 	"github.com/go-xorm/xorm"
+	"sync"
+
+	"vcb_member/conf"
 )
 
 // User 用户表

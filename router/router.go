@@ -1,9 +1,9 @@
 package router
 
 import (
-	"vcb_member/service"
-
 	"github.com/gin-gonic/gin"
+
+	"vcb_member/service"
 )
 
 // Router 全局路由处理
