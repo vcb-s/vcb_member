@@ -6,6 +6,11 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+type wpAuth struct {
+	ClientID  string
+	ClientSec string
+}
+
 type conf struct {
 	Database struct {
 		Host   string
@@ -20,6 +25,9 @@ type conf struct {
 	}
 	Server struct {
 		Port int
+	}
+	Third struct {
+		Wp wpAuth
 	}
 }
 

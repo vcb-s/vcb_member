@@ -11,3 +11,7 @@ encryption = ""
 
 [server]
 port = 0
+
+[third.wp]
+clientID = ''
+clientSec = ''

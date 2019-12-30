@@ -23,8 +23,8 @@ func init() {
 	{
 		// 登录
 		admin.GET("/login", service.Login)
-		// @TODO 关联登录
-		// admin.GET("/loginWithWP", service.Login)
+		// 关联登录
+		admin.GET("/loginWithWP", service.LoginWithWPCode)
 	}
 
 	// 带登录验证的部分

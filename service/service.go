@@ -239,3 +239,27 @@ func ResetPassForSuperAdmin(c *gin.Context) {
 	j.ResponseOK(c)
 	return
 }
+
+// LoginWithWPCode 关联登录
+func LoginWithWPCode(c *gin.Context) {
+	var (
+		j    JSONData
+		req  loginWithWPCodeReq
+		user models.User
+	)
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 根据 Authorization code 换取 AccessToken
+	accessToken, err := helper.GetAccessTokenFromCode(req.Code)
+	if err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 根据accessToken换取主站ID
+}

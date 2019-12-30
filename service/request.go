@@ -17,3 +17,6 @@ type resetPassReq struct {
 	Current     string `json:"current" form:"current" binding:"required"`
 	NewPassword string `json:"new" form:"new" binding:"required"`
 }
+type loginWithWPCodeReq struct {
+	Code string `json:"code" form:"code" binding:"required"`
+}
