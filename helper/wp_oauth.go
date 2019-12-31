@@ -85,3 +85,73 @@ func GetAccessTokenFromCode(code string) (string, error) {
 
 	return result.AccessToken, nil
 }
+
+// UserAvatarURLS 主站用户头像结构
+type UserAvatarURLS struct {
+	Small  string `json:"24"`
+	Medium string `json:"48"`
+	Big    string `json:"96"`
+}
+
+// UserInfoResponse 主站返回的 userInfo 响应体
+type UserInfoResponse struct {
+	ID          int            `json:"id"`
+	Name        string         `json:"name"`
+	URL         string         `json:"url"`
+	Description string         `json:"description"`
+	Link        string         `json:"link"`
+	Slug        string         `json:"slug"`
+	Avatars     UserAvatarURLS `json:"avatar_urls"`
+}
+
+// UserInfoResponseError 主站返回的 userInfo 错误响应体
+type UserInfoResponseError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+// GetUserInfoFromAccesstoken 用 accessToken 换取用户信息
+func GetUserInfoFromAccesstoken(accessToken string) (UserInfoResponse, error) {
+	hc := http.Client{}
+	result := UserInfoResponse{}
+	errorResult := UserInfoResponseError{}
+
+	url := fmt.Sprintf(
+		"https://vcb-s.com/wp-json/wp/v2/users/me?access_token=%s",
+		accessToken,
+	)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return result, err
+	}
+
+	resp, err := hc.Do(req)
+	if err != nil {
+		return result, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, nil
+	}
+
+	// 去除BOM头
+	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
+
+	if resp.StatusCode != http.StatusOK {
+		err = json.Unmarshal(body, &errorResult)
+		if err != nil {
+			return result, errors.New(string(resp.StatusCode))
+		}
+
+		return result, errors.New(errorResult.Message)
+	}
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return result, nil
+	}
+	fmt.Println(result)
+
+	return result, nil
+}

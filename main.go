@@ -14,7 +14,6 @@ import (
 	_ "vcb_member/inital"
 
 	"vcb_member/conf"
-	"vcb_member/helper"
 	"vcb_member/router"
 )
 
@@ -24,9 +23,6 @@ func main() {
 		Addr:    addr,
 		Handler: router.Router,
 	}
-
-	helper.GetAccessTokenFromCode("0pcikvg7ifq65p51ledxaf50dy38n8ltsxklukmi")
-	return
 
 	go func() {
 		err := server.ListenAndServe()

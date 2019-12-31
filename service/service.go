@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 
 	"vcb_member/helper"
@@ -243,9 +244,8 @@ func ResetPassForSuperAdmin(c *gin.Context) {
 // LoginWithWPCode 关联登录
 func LoginWithWPCode(c *gin.Context) {
 	var (
-		j    JSONData
-		req  loginWithWPCodeReq
-		user models.User
+		j   JSONData
+		req loginWithWPCodeReq
 	)
 	if err := c.ShouldBind(&req); err != nil {
 		j.Message = err.Error()
@@ -262,4 +262,16 @@ func LoginWithWPCode(c *gin.Context) {
 	}
 
 	// 根据accessToken换取主站ID
+	user, err := helper.GetUserInfoFromAccesstoken(accessToken)
+	if err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 根据主站ID在第三方关联表查找
+	// 找到了就按照UID签发
+	// 没找到就返回没授权
+
+	fmt.Println(user)
 }
