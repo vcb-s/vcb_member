@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 
 	"vcb_member/helper"
@@ -241,11 +240,12 @@ func ResetPassForSuperAdmin(c *gin.Context) {
 	return
 }
 
-// LoginWithWPCode 关联登录
-func LoginWithWPCode(c *gin.Context) {
+// LoginFromWP 绑定登录
+func LoginFromWP(c *gin.Context) {
 	var (
-		j   JSONData
-		req loginWithWPCodeReq
+		j           JSONData
+		req         loginWithWPCodeReq
+		association models.UserAssociation
 	)
 	if err := c.ShouldBind(&req); err != nil {
 		j.Message = err.Error()
@@ -262,16 +262,46 @@ func LoginWithWPCode(c *gin.Context) {
 	}
 
 	// 根据accessToken换取主站ID
-	user, err := helper.GetUserInfoFromAccesstoken(accessToken)
+	userInWP, err := helper.GetUserInfoFromAccesstoken(accessToken)
 	if err != nil {
 		j.Message = err.Error()
 		j.BadRequest(c)
 		return
 	}
 
-	// 根据主站ID在第三方关联表查找
-	// 找到了就按照UID签发
+	// 根据主站ID在第三方绑定表查找
+	hasValue, err := models.GetDBHelper().Where("type = ? AND association = ?", models.UserAssociationTypeWP, userInWP.ID).Get(&association)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
 	// 没找到就返回没授权
+	if !hasValue {
+		j.Message = "没有找到用户"
+		j.FailAuth(c)
+		return
+	}
+	// 找到了就按照UID签发
+	token, err := helper.GenToken(association.UID)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+	c.Writer.Header().Set("token", token)
+
+	refreshToken, err := helper.GenRefreshToken(association.UID)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+	c.Writer.Header().Set("refreshToken", refreshToken)
+
+	j.ResponseOK(c)
+	return
+}
 
 	fmt.Println(user)
 }

@@ -24,7 +24,7 @@ func init() {
 		// 登录
 		admin.GET("/login", service.Login)
 		// 关联登录
-		admin.GET("/loginWithWP", service.LoginWithWPCode)
+		admin.GET("/loginWithWP", service.LoginFromWP)
 	}
 
 	// 带登录验证的部分

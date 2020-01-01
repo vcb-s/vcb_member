@@ -29,9 +29,20 @@ type UserGroup struct {
 	Name string `xorm:"name"`
 }
 
-// WpAssociation 主站关联授权表
-type WpAssociation struct {
-	//
+// UserAssociationType 账号绑定类型枚举
+type UserAssociationType int8
+
+const (
+	// UserAssociationTypeWP 绑定类型 - 主站
+	UserAssociationTypeWP UserAssociationType = 1
+)
+
+// UserAssociation 绑定授权表
+type UserAssociation struct {
+	ID          string              `xorm:"id"`
+	UID         string              `xorm:"uid"`
+	Association string              `xorm:"association"`
+	Type        UserAssociationType `xorm:"type"`
 }
 
 var instance *xorm.Engine
