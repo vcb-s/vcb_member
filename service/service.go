@@ -378,3 +378,30 @@ func CreateBindForWP(c *gin.Context) {
 	j.ResponseOK(c)
 	return
 }
+
+// DeleteWPBind 移除主站绑定
+func DeleteWPBind(c *gin.Context) {
+	var (
+		j           JSONData
+		association models.UserAssociation
+	)
+	UID := c.Request.Header.Get(uidHeaderKey)
+
+	association.UID = UID
+	association.Type = models.UserAssociationTypeWP
+
+	colsNumber, err := models.GetDBHelper().Delete(&association)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+	if colsNumber == 0 {
+		j.Message = "你未绑定主站账号"
+		j.ServerError(c)
+		return
+	}
+
+	j.ResponseOK(c)
+	return
+}

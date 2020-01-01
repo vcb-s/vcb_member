@@ -38,5 +38,7 @@ func init() {
 		adminWithAuth.POST("/resetPassForSA", service.ResetPassForSuperAdmin)
 		// 绑定主站账号
 		adminWithAuth.POST("/createWPBind", service.CreateBindForWP)
+		// 解绑主站账号
+		adminWithAuth.POST("/deleteWPBind", service.DeleteWPBind)
 	}
 }
