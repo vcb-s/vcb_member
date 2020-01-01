@@ -19,6 +19,7 @@ func (j *JSONData) NoDataResponse(c *gin.Context) {
 		j.Message = "没有数据"
 	}
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // BadRequest 参数错误
@@ -28,6 +29,7 @@ func (j *JSONData) BadRequest(c *gin.Context) {
 		j.Message = "参数错误"
 	}
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // ResponseOK 请求成功
@@ -37,6 +39,7 @@ func (j *JSONData) ResponseOK(c *gin.Context) {
 		j.Message = "操作成功"
 	}
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // ServerError 服务器错误
@@ -46,18 +49,24 @@ func (j *JSONData) ServerError(c *gin.Context) {
 		j.Message = "服务出了一点小问题"
 	}
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // Unauthorized 缺失认证
 func (j *JSONData) Unauthorized(c *gin.Context) {
+	if j.Message == "" {
+		j.Message = "请先登录"
+	}
 	j.Code = http.StatusUnauthorized
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // FailAuth 认证失败
 func (j *JSONData) FailAuth(c *gin.Context) {
 	j.Code = http.StatusForbidden
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // NotAcceptable 无效操作
@@ -67,12 +76,14 @@ func (j *JSONData) NotAcceptable(c *gin.Context) {
 		j.Message = "无效操作"
 	}
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // TimeOut 访问超时
 func (j *JSONData) TimeOut(c *gin.Context) {
 	j.Code = http.StatusRequestTimeout
 	c.JSON(http.StatusOK, j)
+	c.Abort()
 }
 
 // 自定义响应结构
