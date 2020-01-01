@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	"vcb_member/helper"
@@ -270,7 +272,7 @@ func LoginFromWP(c *gin.Context) {
 	}
 
 	// 根据主站ID在第三方绑定表查找
-	hasValue, err := models.GetDBHelper().Where("type = ? AND association = ?", models.UserAssociationTypeWP, userInWP.ID).Get(&association)
+	hasValue, err := models.GetDBHelper().Where("type = ? AND association = ?", models.UserAssociationTypeWP, strconv.Itoa(userInWP.ID)).Get(&association)
 	if err != nil {
 		j.Message = err.Error()
 		j.ServerError(c)
@@ -303,5 +305,76 @@ func LoginFromWP(c *gin.Context) {
 	return
 }
 
-	fmt.Println(user)
+// CreateBindForWP 添加主站绑定
+func CreateBindForWP(c *gin.Context) {
+	var (
+		j           JSONData
+		req         createBindForWPReq
+		association models.UserAssociation
+	)
+	UID := c.Request.Header.Get(uidHeaderKey)
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 查询用户是否有同类型绑定，不允许重复
+	hasValue, err := models.GetDBHelper().Where("type = ? AND uid = ?", models.UserAssociationTypeWP, UID).Get(&association)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+	if hasValue {
+		j.Message = "你已绑定其他账号"
+		j.ServerError(c)
+		return
+	}
+
+	// 根据 Authorization code 换取 AccessToken
+	accessToken, err := helper.GetAccessTokenFromCode(req.Code)
+	if err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 根据accessToken换取主站ID
+	userInWP, err := helper.GetUserInfoFromAccesstoken(accessToken)
+	if err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	// 检查主站ID是否已经跟其他账号绑定过
+	hasValue, err = models.GetDBHelper().Where("type = ? AND association = ?", models.UserAssociationTypeWP, strconv.Itoa(userInWP.ID)).Get(&association)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+	// 不允许重复绑定
+	if hasValue {
+		j.Message = "该主站账号已被绑定"
+		j.FailAuth(c)
+		return
+	}
+
+	association.ID = helper.GenID()
+	association.UID = UID
+	association.Association = strconv.Itoa(userInWP.ID)
+	association.Type = models.UserAssociationTypeWP
+
+	// 没绑定过的就添加一条绑定
+	_, err = models.GetDBHelper().InsertOne(&association)
+	if err != nil {
+		j.Message = err.Error()
+		j.ServerError(c)
+		return
+	}
+
+	j.ResponseOK(c)
+	return
 }

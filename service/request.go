@@ -20,3 +20,4 @@ type resetPassReq struct {
 type loginWithWPCodeReq struct {
 	Code string `json:"code" form:"code" binding:"required"`
 }
+type createBindForWPReq = loginWithWPCodeReq
