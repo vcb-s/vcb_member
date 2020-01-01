@@ -26,6 +26,7 @@ const jwtIssuer = "vcb-member"
 const jwtExpires = 5 * time.Minute
 const jwtRefreshExpires = 7 * 24 * time.Hour
 
+var idGenerator *olaf.Olaf
 var signKey = []byte(conf.Main.Jwt.Mac)
 var encryptKey = []byte(conf.Main.Jwt.Encryption)
 
@@ -35,11 +36,13 @@ const ErrorExpired = "Expired"
 // ErrorInvalid jwt无效
 const ErrorInvalid = "Invalid"
 
+func init() {
+	idGenerator = olaf.NewOlafWithEpoch(1, timeStart)
+}
+
 // GenID 获取一个雪花ID
 func GenID() string {
-	o := olaf.NewOlafWithEpoch(1, timeStart)
-
-	return o.Id64Ascii()
+	return idGenerator.Id64Ascii()
 }
 
 // GenToken 获取一个jwt
