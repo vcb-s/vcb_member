@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"vcb_member/conf"
@@ -71,7 +72,7 @@ func GetAccessTokenFromCode(code string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		err = json.Unmarshal(body, &errorResult)
 		if err != nil {
-			return "", errors.New(string(resp.StatusCode))
+			return "", errors.New(strconv.Itoa(resp.StatusCode))
 		}
 
 		return "", errors.New(errorResult.ErrorDescription)
@@ -141,7 +142,7 @@ func GetUserInfoFromAccesstoken(accessToken string) (UserInfoResponse, error) {
 	if resp.StatusCode != http.StatusOK {
 		err = json.Unmarshal(body, &errorResult)
 		if err != nil {
-			return result, errors.New(string(resp.StatusCode))
+			return result, errors.New(strconv.Itoa(resp.StatusCode))
 		}
 
 		return result, errors.New(errorResult.Message)
