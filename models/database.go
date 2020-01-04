@@ -62,7 +62,7 @@ func GetDBHelper() *xorm.Engine {
 
 func newDBHelper() *xorm.Engine {
 	engine, err := xorm.NewEngine("mysql", fmt.Sprintf(
-		"%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
+		"%v:%v@tcp([%v]:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
 		conf.Main.Database.User, conf.Main.Database.Pass, conf.Main.Database.Host, conf.Main.Database.Port, conf.Main.Database.Dbname,
 	))
 	if err != nil {
