@@ -23,7 +23,7 @@ import (
 // new Number( new Date('Mon Dec 01 2010 00:00:00 GMT+0800') )
 const timeStart = 1291132800000
 const jwtIssuer = "vcb-member"
-const jwtExpires = 5 * time.Minute
+const jwtExpires = 30 * time.Minute
 const jwtRefreshExpires = 7 * 24 * time.Hour
 
 var idGenerator *olaf.Olaf
