@@ -2,3 +2,5 @@
 /.idea
 config.toml
 .env
+
+/build
