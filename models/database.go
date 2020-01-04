@@ -10,23 +10,33 @@ import (
 
 // User 用户表
 type User struct {
-	ID         string `xorm:"id"`
-	Retired    int    `xorm:"retired"`
-	Avast      string `xorm:"avast"`
-	Bio        string `xorm:"bio"`
-	Nickname   string `xorm:"nickname"`
-	Job        string `xorm:"job"`
-	Order      int    `xorm:"order"`
-	Password   string `xorm:"password"`
-	Group      string `xorm:"group"`
-	JwtID      string `xorm:"jwt_id"`
-	SuperAdmin int    `xorm:"super_admin"`
+	ID         string `json:"id" form:"id" xorm:"id"`
+	Retired    int    `json:"retired" form:"retired" xorm:"retired"`
+	Avast      string `json:"avast" form:"avast" xorm:"avast"`
+	Bio        string `json:"bio" form:"bio" xorm:"bio"`
+	Nickname   string `json:"nickname" form:"nickname" xorm:"nickname"`
+	Job        string `json:"job" form:"job" xorm:"job"`
+	Order      int    `json:"order" form:"order" xorm:"order"`
+	Password   string `json:"password" form:"password" xorm:"password"`
+	Group      string `json:"group" form:"group" xorm:"group"`
+	JwtID      string `json:"jwt_id" form:"jwt_id" xorm:"jwt_id"`
+	SuperAdmin int    `json:"super_admin" form:"super_admin" xorm:"super_admin"`
+}
+
+// TableName 指示 User 表名
+func (m User) TableName() string {
+	return "user"
 }
 
 // UserGroup 组别表
 type UserGroup struct {
-	ID   int    `xorm:"id"`
-	Name string `xorm:"name"`
+	ID   int    `json:"id" form:"id" xorm:"id"`
+	Name string `json:"name" form:"name" xorm:"name"`
+}
+
+// TableName 指示 UserGroup 表名
+func (m UserGroup) TableName() string {
+	return "user_group"
 }
 
 // UserAssociationType 账号绑定类型枚举
@@ -39,10 +49,15 @@ const (
 
 // UserAssociation 绑定授权表
 type UserAssociation struct {
-	ID          string              `xorm:"id"`
-	UID         string              `xorm:"uid"`
-	Association string              `xorm:"association"`
-	Type        UserAssociationType `xorm:"type"`
+	ID          string              `json:"id" form:"id" xorm:"id"`
+	UID         string              `json:"uid" form:"uid" xorm:"uid"`
+	Association string              `json:"association" form:"association" xorm:"association"`
+	Type        UserAssociationType `json:"type" form:"type" xorm:"type"`
+}
+
+// TableName 指示 UserAssociation 表名
+func (m UserAssociation) TableName() string {
+	return "user_association"
 }
 
 var instance *xorm.Engine

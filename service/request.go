@@ -1,6 +1,10 @@
 package service
 
-// ?? --- 12
+import (
+	"vcb_member/models"
+)
+
+// yes/no --- 12
 
 type userListReq struct {
 	Group    int `json:"group" form:"group"`
@@ -21,3 +25,4 @@ type loginWithWPCodeReq struct {
 	Code string `json:"code" form:"code" binding:"required"`
 }
 type createBindForWPReq = loginWithWPCodeReq
+type updateUserReq = models.User

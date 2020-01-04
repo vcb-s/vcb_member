@@ -43,8 +43,13 @@ func (j *JSONData) ResponseOK(c *gin.Context) {
 }
 
 // ServerError 服务器错误
-func (j *JSONData) ServerError(c *gin.Context) {
+func (j *JSONData) ServerError(c *gin.Context, err error) {
 	j.Code = http.StatusInternalServerError
+
+	if err != nil {
+		j.Message = err.Error()
+	}
+
 	if j.Message == "" {
 		j.Message = "服务出了一点小问题"
 	}

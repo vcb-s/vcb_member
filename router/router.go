@@ -40,5 +40,7 @@ func init() {
 		adminWithAuth.POST("/createWPBind", service.CreateBindForWP)
 		// 解绑主站账号
 		adminWithAuth.POST("/deleteWPBind", service.DeleteWPBind)
+		// 修改自己或他人的信息
+		adminWithAuth.POST("/updateUser", service.UpdateUser)
 	}
 }

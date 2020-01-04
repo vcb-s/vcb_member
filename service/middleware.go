@@ -5,12 +5,6 @@ import (
 	"vcb_member/helper"
 )
 
-var uidHeaderKey string
-
-func init() {
-	uidHeaderKey = helper.GenID()
-}
-
 // AuthMiddleware 登录检查以及token重签
 func AuthMiddleware(c *gin.Context) {
 	var j JSONData
@@ -36,7 +30,7 @@ func AuthMiddleware(c *gin.Context) {
 			return
 		}
 	}
-	c.Request.Header.Set(uidHeaderKey, uid)
+	c.Request.Header.Set("uid", uid)
 
 	c.Next()
 
@@ -46,19 +40,19 @@ func AuthMiddleware(c *gin.Context) {
 	var newRefreshToken string
 	newToken, err := helper.GenToken(uid)
 	if err != nil {
-		j.ServerError(c)
+		j.ServerError(c, err)
 		return
 	}
 	if cap(originRefreshToken) > 0 {
 		newRefreshToken, err = helper.ReGenRefreshToken(originRefreshToken)
 		if err != nil {
-			j.ServerError(c)
+			j.ServerError(c, err)
 			return
 		}
 	} else {
 		newRefreshToken, err = helper.GenRefreshToken(uid)
 		if err != nil {
-			j.ServerError(c)
+			j.ServerError(c, err)
 			return
 		}
 	}
