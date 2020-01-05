@@ -27,8 +27,8 @@ const jwtExpires = 30 * time.Minute
 const jwtRefreshExpires = 7 * 24 * time.Hour
 
 var idGenerator *olaf.Olaf
-var signKey = []byte(conf.Main.Jwt.Mac)
-var encryptKey = []byte(conf.Main.Jwt.Encryption)
+var tokenSignKey = []byte(conf.Main.Jwt.Mac)
+var refreshTokenSignKey = []byte(conf.Main.Jwt.Encryption)
 
 // ErrorExpired jwt过期
 const ErrorExpired = "Expired"
@@ -54,7 +54,7 @@ func GenToken(uid string) (string, error) {
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtExpires))
 	claims.Subject = uid
 
-	token, err := claims.HMACSign(jwt.HS256, signKey)
+	token, err := claims.HMACSign(jwt.HS256, tokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +64,7 @@ func GenToken(uid string) (string, error) {
 
 // CheckToken 检查jwt
 func CheckToken(tokenString []byte) (string, error) {
-	claims, err := jwt.HMACCheck(tokenString, signKey)
+	claims, err := jwt.HMACCheck(tokenString, tokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -95,7 +95,7 @@ func GenRefreshToken(uid string) (string, error) {
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtRefreshExpires))
 	claims.Subject = uid
 
-	token, err := claims.HMACSign(jwt.HS256, signKey)
+	token, err := claims.HMACSign(jwt.HS256, refreshTokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -105,7 +105,7 @@ func GenRefreshToken(uid string) (string, error) {
 
 // ReGenRefreshToken 重签 refreshjwt
 func ReGenRefreshToken(originToken []byte) (string, error) {
-	claims, err := jwt.HMACCheck(originToken, signKey)
+	claims, err := jwt.HMACCheck(originToken, refreshTokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -114,7 +114,7 @@ func ReGenRefreshToken(originToken []byte) (string, error) {
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtRefreshExpires))
 
-	token, err := claims.HMACSign(jwt.HS256, signKey)
+	token, err := claims.HMACSign(jwt.HS256, refreshTokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -123,16 +123,19 @@ func ReGenRefreshToken(originToken []byte) (string, error) {
 }
 
 // CheckRefreshToken 检查jwt
-func CheckRefreshToken(token []byte) (string, error) {
-	claims, err := jwt.HMACCheck(token, signKey)
+func CheckRefreshToken(token []byte) (bool, string, error) {
+	shouldReGen := false
+
+	claims, err := jwt.HMACCheck(token, refreshTokenSignKey)
 	if err != nil {
-		return "", err
+		return shouldReGen, "", err
 	}
 
 	uid := claims.Subject
+	now := time.Now()
 
-	if !claims.Valid((time.Now())) {
-		return "", errors.New(ErrorExpired)
+	if !claims.Valid((now)) {
+		return shouldReGen, "", errors.New(ErrorExpired)
 	}
 
 	// 查询用户的 tokenID 字段
@@ -140,13 +143,18 @@ func CheckRefreshToken(token []byte) (string, error) {
 	var user models.User
 	hasValue, err := models.GetDBHelper().Table("user").Where("id = ? and jwt_id = ?", uid, tokenID).Get(&user)
 	if err != nil {
-		return "", err
+		return shouldReGen, "", err
 	}
 	if !hasValue {
-		return "", errors.New(ErrorInvalid)
+		return shouldReGen, "", errors.New(ErrorInvalid)
 	}
 
-	return uid, nil
+	// 两倍常规jwt过期时间就给重签
+	if claims.Issued.Time().Add(jwtExpires * 2).Before(now) {
+		shouldReGen = true
+	}
+
+	return shouldReGen, uid, nil
 }
 
 // CalcPassHash 获取一个安全的密码Hash
@@ -208,7 +216,7 @@ func GenCiphertext(plaintext string) (Ciphertext, error) {
 
 	result.Iv = base64.URLEncoding.EncodeToString(iv)
 
-	block, err := aes.NewCipher(encryptKey)
+	block, err := aes.NewCipher(refreshTokenSignKey)
 	if err != nil {
 		panic(err.Error())
 	}
