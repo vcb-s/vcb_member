@@ -15,9 +15,14 @@ func init() {
 	Router = gin.Default()
 
 	config := cors.DefaultConfig()
+	config.AllowWildcard = true
 	config.AllowOrigins = []string{
-		"http://localhost:1234/",
+		"http://localhost:*",
 	}
+	config.AllowHeaders = []string{
+		"*",
+	}
+	Router.Use(cors.New(config))
 
 	root := Router.Group("vcbs_member_api")
 	// 前台
