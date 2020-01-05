@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"vcb_member/service"
@@ -12,6 +13,12 @@ var Router *gin.Engine
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 	Router = gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{
+		"http://localhost:1234/",
+	}
+
 	root := Router.Group("vcbs_member_api")
 	// 前台
 	{
