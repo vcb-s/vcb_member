@@ -95,7 +95,7 @@ func (j *JSONData) TimeOut(c *gin.Context) {
 
 // 分页结构
 type pagination struct {
-	Current  int `json:"current" form:"current"`
+	Current  int `json:"page" form:"page"`
 	PageSize int `json:"pageSize" form:"pageSize"`
 	Total    int `json:"total" form:"total"`
 }
