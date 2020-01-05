@@ -38,7 +38,6 @@ func AuthMiddleware(c *gin.Context) {
 	/** token重签间隔：每次刷新 */
 	/** refreshToken重签间隔：常规token的过期时间 * 2 */
 
-	var newRefreshToken string
 	newToken, err := helper.GenToken(uid)
 	if err != nil {
 		// 这里重签失败不能抛出到响应体中，因为已经abort了
@@ -46,6 +45,9 @@ func AuthMiddleware(c *gin.Context) {
 		c.Writer.Header().Add("X-Error-Report", err.Error())
 		return
 	}
+	c.Writer.Header().Set("token", newToken)
+
+	var newRefreshToken string
 	if cap(originRefreshToken) > 0 {
 		if shouldReGen {
 			newRefreshToken, err = helper.ReGenRefreshToken(originRefreshToken)
@@ -65,7 +67,5 @@ func AuthMiddleware(c *gin.Context) {
 			return
 		}
 	}
-
-	c.Writer.Header().Set("token", newToken)
 	c.Writer.Header().Set("refreshToken", newRefreshToken)
 }
