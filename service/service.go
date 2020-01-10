@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -25,17 +26,17 @@ func UserList(c *gin.Context) {
 	userList := make([]userListResponseRes, 0, req.PageSize)
 	var sqlBuilder = models.GetDBHelper().Table("user")
 	if req.Group > 0 {
-		sqlBuilder.Where(`group = ?`, req.Group)
+		sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
 	}
 	if req.Retired == 1 {
-		sqlBuilder.Where(`retired = ?`, 1)
+		sqlBuilder.Where("`retired` = ?", 1)
 	}
 	if req.Sticky == 1 {
-		sqlBuilder.Where(`"order" > ?`, 0)
+		sqlBuilder.Where("`order` > ?", 0)
 	}
 	sqlBuilder.Limit(req.PageSize, req.PageSize*(req.Current-1))
 
-	sqlBuilder.OrderBy(`"order" desc, id asc`)
+	sqlBuilder.OrderBy("`order` desc, `id` asc")
 
 	total, err := sqlBuilder.FindAndCount(&userList)
 	if err != nil {
