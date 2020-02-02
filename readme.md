@@ -28,6 +28,7 @@ go get -v github.com/haya14busa/goplay/cmd/goplay
 go get -v github.com/uudashr/gopkgs/cmd/gopkgs
 go get -v github.com/davidrjenni/reftools/cmd/fillstruct
 go get -v golang.org/x/tools/gopls
+go get -v github.com/stamblerre/gocode
 ```
 2. 安装 microsoft 发行的 go 扩展
 3. 丢弃刚刚安装时产生的`go.mod`和`go.sum`文件修改
