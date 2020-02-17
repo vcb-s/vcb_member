@@ -25,6 +25,9 @@ func UserList(c *gin.Context) {
 
 	userList := make([]userListResponseRes, 0, req.PageSize)
 	var sqlBuilder = models.GetDBHelper().Table("user")
+
+	sqlBuilder.Where("`delete_at` is NULL")
+
 	if req.Group > 0 {
 		sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
 	}
