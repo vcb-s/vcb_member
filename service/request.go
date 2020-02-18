@@ -7,7 +7,7 @@ import (
 // yes/no --- 12
 
 type userListReq struct {
-	Group    int `json:"group" form:"group"`
+	Group    int `json:"group" form:"group" binding:"required,min=-1"`
 	Retired  int `json:"retired" form:"retired"`
 	Sticky   int `json:"sticky" form:"sticky"`
 	Current  int `json:"page" form:"page" binding:"required,min=1"`
