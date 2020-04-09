@@ -2,6 +2,9 @@
 
 echo "begin..."
 
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.io,direct
+
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build main.go
 # CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o build main.go
 
