@@ -1,28 +1,41 @@
 package service
 
 import (
+	"time"
 	"vcb_member/models"
 )
 
 // yes/no --- 12
 
+type userSearchReq struct {
+	Keyword string `json:"keyword" form:"keyword" binding:"required"`
+}
 type userListReq struct {
-	Group    int `json:"group" form:"group" binding:"required,min=-1"`
-	Retired  int `json:"retired" form:"retired"`
-	Sticky   int `json:"sticky" form:"sticky"`
-	Current  int `json:"page" form:"page" binding:"required,min=1"`
-	PageSize int `json:"pageSize" form:"pageSize" binding:"required,min=1,max=20"`
+	KeyWord  string `json:"keyword" form:"keyword"`
+	Group    int    `json:"group" form:"group"`
+	Retired  int    `json:"retired" form:"retired"`
+	Sticky   int    `json:"sticky" form:"sticky"`
+	Current  int    `json:"page" form:"page"`
+	PageSize int    `json:"pageSize" form:"pageSize"`
 }
 type loginReq struct {
 	UID      string `json:"uid" form:"uid" binding:"required"`
 	Password string `json:"password" form:"password" binding:"required"`
 }
 type resetPassReq struct {
-	Current     string `json:"current" form:"current" binding:"required"`
+	UID         string `json:"uid" form:"uid"`
+	Current     string `json:"current" form:"current"`
 	NewPassword string `json:"new" form:"new" binding:"required"`
 }
 type loginWithWPCodeReq struct {
 	Code string `json:"code" form:"code" binding:"required"`
 }
 type createBindForWPReq = loginWithWPCodeReq
-type updateUserReq = models.User
+type updateUserReq struct {
+	models.UserCard
+	ID        string     `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
+	UID       string     `json:",omitempty" form:",omitempty" gorm:"column:uid"`
+	CreatedAt time.Time  `json:",omitempty" form:",omitempty"`
+	UpdatedAt time.Time  `json:",omitempty" form:",omitempty"`
+	DeletedAt *time.Time `json:",omitempty" form:",omitempty"`
+}

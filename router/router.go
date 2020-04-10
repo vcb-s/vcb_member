@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/gin-contrib/cors"
+	// "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"vcb_member/service"
@@ -14,20 +14,20 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 	Router = gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowWildcard = true
-	config.AllowOrigins = []string{
-		"http://localhost:*",
-	}
-	config.AllowHeaders = []string{
-		"*",
-	}
-	Router.Use(cors.New(config))
+	// config := cors.DefaultConfig()
+	// config.AllowWildcard = true
+	// config.AllowOrigins = []string{
+	// 	"http://localhost:*",
+	// }
+	// config.AllowHeaders = []string{
+	// 	"*",
+	// }
+	// Router.Use(cors.New(config))
 
 	root := Router.Group("vcbs_member_api")
 	// 前台
 	{
-		root.GET("/user/list", service.UserList)
+		root.GET("/user/list", service.UserCardList)
 		root.GET("/group/list", service.GroupList)
 	}
 
@@ -44,10 +44,9 @@ func init() {
 	{
 		adminWithAuth := root.Group("/admin")
 		adminWithAuth.Use(service.AuthMiddleware)
-		// 重置自己的密码
+
+		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)
-		// 重置他人的密码
-		adminWithAuth.POST("/resetPassForSA", service.ResetPassForSuperAdmin)
 		// 绑定主站账号
 		adminWithAuth.POST("/createWPBind", service.CreateBindForWP)
 		// 解绑主站账号

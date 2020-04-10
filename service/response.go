@@ -1,8 +1,10 @@
 package service
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"vcb_member/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 // JSONData 基础答复结构
@@ -39,7 +41,8 @@ func (j *JSONData) ResponseOK(c *gin.Context) {
 		j.Message = "操作成功"
 	}
 	c.JSON(http.StatusOK, j)
-	c.Abort()
+	// 只有错误才 Abort
+	// c.Abort()
 }
 
 // ServerError 服务器错误
@@ -102,18 +105,11 @@ type pagination struct {
 
 // 用户列表
 type userListResponseRes struct {
-	ID       string `json:"id" form:"id" xorm:"id"`
-	Retired  int    `json:"retired" form:"retired" xorm:"retired"`
-	Avast    string `json:"avast" form:"avast" xorm:"avast"`
-	Bio      string `json:"bio" form:"bio" xorm:"bio"`
-	Nickname string `json:"nickname" form:"nickname" xorm:"nickname"`
-	Job      string `json:"job" form:"job" xorm:"job"`
-	Order    int    `json:"order" form:"order" xorm:"order"`
-	Group    string `json:"group" form:"group" xorm:"group"`
+	models.UserCard
 }
 
 // 组别列表
 type userGroupListResponseRes struct {
-	ID   string `json:"id" form:"id" xorm:"id"`
-	Name string `json:"name" form:"name" xorm:"name"`
+	ID   string `json:"id" form:"id" gorm:"column:id"`
+	Name string `json:"name" form:"name" gorm:"column:name"`
 }

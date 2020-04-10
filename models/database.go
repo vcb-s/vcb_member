@@ -4,25 +4,20 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
-	"github.com/go-xorm/xorm"
+	"github.com/jinzhu/gorm"
 
 	"vcb_member/conf"
 )
 
 // User 用户表
 type User struct {
-	ID         string `json:"id" form:"id" xorm:"id"`
-	Retired    int    `json:"retired" form:"retired" xorm:"retired"`
-	Avast      string `json:"avast" form:"avast" xorm:"avast"`
-	Bio        string `json:"bio" form:"bio" xorm:"bio"`
-	Nickname   string `json:"nickname" form:"nickname" xorm:"nickname"`
-	Job        string `json:"job" form:"job" xorm:"job"`
-	Order      int    `json:"order" form:"order" xorm:"order"`
-	Password   string `json:"password" form:"password" xorm:"password"`
-	Group      string `json:"group" form:"group" xorm:"group"`
-	JwtID      string `json:"jwt_id" form:"jwt_id" xorm:"jwt_id"`
-	SuperAdmin int    `json:"super_admin" form:"super_admin" xorm:"super_admin"`
+	SoftDeletedModel
+	UID      string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Password string `json:"password" form:"password" gorm:"column:pass"`
+	IsAdmin  int8   `json:"isAdmin" form:"isAdmin" gorm:"column:is_admin"`
+	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
 }
 
 // TableName 指示 User 表名
@@ -30,15 +25,34 @@ func (m User) TableName() string {
 	return "user"
 }
 
-// UserGroup 组别表
-type UserGroup struct {
-	ID   int    `json:"id" form:"id" xorm:"id"`
-	Name string `json:"name" form:"name" xorm:"name"`
+// UserCard 用户表
+type UserCard struct {
+	SoftDeletedModel
+	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Retired  int    `json:"retired" form:"retired" gorm:"column:retired"`
+	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
+	Bio      string `json:"bio" form:"bio" gorm:"column:bio"`
+	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
+	Job      string `json:"job" form:"job" gorm:"column:job"`
+	Order    int    `json:"order" form:"order" gorm:"column:order"`
+	Group    string `json:"group" form:"group" gorm:"column:group"`
+	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
+}
+
+// TableName 指示 User 表名
+func (m UserCard) TableName() string {
+	return "user_crad"
+}
+
+// UserCardGroup 组别表
+type UserCardGroup struct {
+	ID   int    `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Name string `json:"name" form:"name" gorm:"column:name"`
 }
 
 // TableName 指示 UserGroup 表名
-func (m UserGroup) TableName() string {
-	return "user_group"
+func (m UserCardGroup) TableName() string {
+	return "use_card_group"
 }
 
 // UserAssociationType 账号绑定类型枚举
@@ -51,18 +65,19 @@ const (
 
 // UserAssociation 绑定授权表
 type UserAssociation struct {
-	ID          string              `json:"id" form:"id" xorm:"id"`
-	UID         string              `json:"uid" form:"uid" xorm:"uid"`
-	Association string              `json:"association" form:"association" xorm:"association"`
-	Type        UserAssociationType `json:"type" form:"type" xorm:"type"`
+	SoftDeletedModel
+	ID       string              `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	UID      string              `json:"uid" form:"uid" gorm:"column:uid"`
+	AuthCode string              `json:"association" form:"association" gorm:"column:auth"`
+	Type     UserAssociationType `json:"type" form:"type" gorm:"column:type"`
 }
 
 // TableName 指示 UserAssociation 表名
 func (m UserAssociation) TableName() string {
-	return "user_association"
+	return "login_association"
 }
 
-var instance *xorm.Engine
+var instance *gorm.DB
 var once sync.Once
 
 func init() {
@@ -70,15 +85,15 @@ func init() {
 }
 
 // GetDBHelper 获取数据库实例
-func GetDBHelper() *xorm.Engine {
+func GetDBHelper() *gorm.DB {
 	once.Do(func() {
 		instance = newDBHelper()
 	})
 	return instance
 }
 
-func newDBHelper() *xorm.Engine {
-	engine, err := xorm.NewEngine("mysql", fmt.Sprintf(
+func newDBHelper() *gorm.DB {
+	engine, err := gorm.Open("mysql", fmt.Sprintf(
 		"%v:%v@tcp([%v]:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
 		conf.Main.Database.User,
 		conf.Main.Database.Pass,
@@ -87,21 +102,19 @@ func newDBHelper() *xorm.Engine {
 		conf.Main.Database.Dbname,
 	))
 	if err != nil {
-		log.Fatalln("xorm err", err)
+		log.Fatalln("gorm err", err)
 	}
 	//test DB if connection
-	err = engine.Ping()
+	err = engine.DB().Ping()
 	if err != nil {
-		log.Fatalln("xorm Ping err", err)
+		log.Fatalln("gorm Ping err", err)
 	}
 
 	//设置连接池
-	engine.SetMaxIdleConns(2)     //空闲数大小
-	engine.SetMaxOpenConns(10)    //最大打开连接数
-	engine.SetConnMaxLifetime(-1) //重用超时
+	engine.DB().SetMaxIdleConns(10)           //空闲数大小
+	engine.DB().SetMaxOpenConns(100)          //最大打开连接数
+	engine.DB().SetConnMaxLifetime(time.Hour) //重用超时
 
-	//start sql log print
-	engine.ShowSQL(true)
-	engine.ShowExecTime(true)
+	engine.LogMode(true)
 	return engine
 }
