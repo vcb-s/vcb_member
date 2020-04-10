@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -15,9 +16,9 @@ import (
 // UserCardList 用户列表
 func UserCardList(c *gin.Context) {
 	var (
-		j        JSONData
-		req      userListReq
-		userList = make([]userListResponseRes, 0)
+		j            JSONData
+		req          userListReq
+		userCardList = make([]userListResponseRes, 0)
 	)
 	if err := c.ShouldBind(&req); err != nil {
 		j.Message = err.Error()
@@ -28,33 +29,61 @@ func UserCardList(c *gin.Context) {
 	var sqlBuilder = models.GetDBHelper()
 
 	if req.Group > 0 {
-		sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
+		sqlBuilder = sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
 	}
 	if req.Retired == 1 {
-		sqlBuilder.Where("`retired` = ?", 1)
+		sqlBuilder = sqlBuilder.Where("`retired` = ?", 1)
 	}
 	if req.Sticky == 1 {
-		sqlBuilder.Where("`order` > ?", 0)
+		sqlBuilder = sqlBuilder.Where("`order` > ?", 0)
 	}
 	if req.PageSize > 0 && req.Current > 0 {
-		sqlBuilder.Limit(req.PageSize).Offset(req.PageSize * (req.Current - 1))
+		sqlBuilder = sqlBuilder.Limit(req.PageSize).Offset(req.PageSize * (req.Current - 1))
 	}
 	if len(req.KeyWord) > 0 {
 		keyword := fmt.Sprintf("%%%s%%", req.KeyWord)
-		sqlBuilder.Where("`bio` like ? OR `nickname` like ?", keyword, keyword)
+		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ?", keyword, keyword)
 	}
 
-	sqlBuilder.Order("`order` desc").Order("`id` asc")
+	sqlBuilder = sqlBuilder.Order("`order` DESC").Order("`id` ASC")
 
 	total := 0
 
-	err := sqlBuilder.Find(&userList).Count(&total).Error
+	err := sqlBuilder.Find(&userCardList).Count(&total).Error
 	if err != nil {
 		j.ServerError(c, err)
 		return
 	}
 
-	j.Data = map[string]interface{}{"res": userList, "total": total}
+	// 乱序
+	originUserCardListLen := len(userCardList)
+	if req.Sticky != 1 && originUserCardListLen > 0 {
+		// 没有筛选置顶，也就是数组需要乱序
+		// 如果筛选了置顶整个数组就是有顺序的
+		stickyUserList := make([]userListResponseRes, 0)
+		lastStickyUserIndex := 0
+
+		// 找到置顶部分
+		for i := 0; i < originUserCardListLen; i++ {
+			if userCardList[i].Order > 0 {
+				lastStickyUserIndex = i
+			} else {
+				break
+			}
+		}
+
+		// 置顶用户列表
+		stickyUserList = userCardList[:lastStickyUserIndex+1]
+		userCardList = userCardList[lastStickyUserIndex+1:]
+
+		rand.Shuffle(len(userCardList), func(i, j int) {
+			userCardList[i], userCardList[j] = userCardList[j], userCardList[i]
+		})
+
+		userCardList = append(stickyUserList, userCardList...)
+	}
+
+	j.Data = map[string]interface{}{"res": userCardList, "total": total}
 	j.ResponseOK(c)
 	return
 }
@@ -66,11 +95,10 @@ func GroupList(c *gin.Context) {
 	)
 
 	userGroupList := make([]userGroupListResponseRes, 0)
-	var sqlBuilder = models.GetDBHelper().Table("user_group")
 
 	total := 0
-	err := sqlBuilder.Find(&userGroupList).Count(&total).Error
-	if err != nil {
+
+	if err := models.GetDBHelper().Find(&userGroupList).Count(&total).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
@@ -93,8 +121,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	err := models.GetDBHelper().First(&user, req.UID).Error
-	if err != nil {
+	if err := models.GetDBHelper().First(&user, req.UID).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.Message = "用户不存在"
 			j.NotAcceptable(c)
