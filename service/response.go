@@ -110,6 +110,5 @@ type userListResponseRes struct {
 
 // 组别列表
 type userGroupListResponseRes struct {
-	ID   string `json:"id" form:"id" gorm:"column:id"`
-	Name string `json:"name" form:"name" gorm:"column:name"`
+	models.UserCardGroup
 }
