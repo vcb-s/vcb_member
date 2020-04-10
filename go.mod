@@ -8,8 +8,7 @@ require (
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/go-xorm/xorm v0.7.9
+	github.com/jinzhu/gorm v1.9.12
 	github.com/pascaldekloe/jwt v1.8.0
 	github.com/pelletier/go-toml v1.7.0
-	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
 )
