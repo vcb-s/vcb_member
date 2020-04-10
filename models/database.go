@@ -13,11 +13,11 @@ import (
 
 // User 用户表
 type User struct {
-	SoftDeletedModel
 	UID      string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
 	Password string `json:"password" form:"password" gorm:"column:pass"`
 	IsAdmin  int8   `json:"isAdmin" form:"isAdmin" gorm:"column:is_admin"`
 	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
+	SoftDeletedModel
 }
 
 // TableName 指示 User 表名
@@ -27,16 +27,16 @@ func (m User) TableName() string {
 
 // UserCard 用户表
 type UserCard struct {
-	SoftDeletedModel
 	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	Retired  int    `json:"retired" form:"retired" gorm:"column:retired"`
+	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
+	Group    string `json:"group" form:"group" gorm:"column:group"`
+	Order    int    `json:"order" form:"order" gorm:"column:order"`
 	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
 	Bio      string `json:"bio" form:"bio" gorm:"column:bio"`
 	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
 	Job      string `json:"job" form:"job" gorm:"column:job"`
-	Order    int    `json:"order" form:"order" gorm:"column:order"`
-	Group    string `json:"group" form:"group" gorm:"column:group"`
-	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
+	Retired  int    `json:"retired" form:"retired" gorm:"column:retired"`
+	SoftDeletedModel
 }
 
 // TableName 指示 User 表名
@@ -65,11 +65,11 @@ const (
 
 // UserAssociation 绑定授权表
 type UserAssociation struct {
-	SoftDeletedModel
 	ID       string              `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
 	UID      string              `json:"uid" form:"uid" gorm:"column:uid"`
 	AuthCode string              `json:"association" form:"association" gorm:"column:auth"`
 	Type     UserAssociationType `json:"type" form:"type" gorm:"column:type"`
+	SoftDeletedModel
 }
 
 // TableName 指示 UserAssociation 表名
