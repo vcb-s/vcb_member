@@ -52,7 +52,7 @@ type UserCardGroup struct {
 
 // TableName 指示 UserGroup 表名
 func (m UserCardGroup) TableName() string {
-	return "use_card_group"
+	return "user_card_group"
 }
 
 // UserAssociationType 账号绑定类型枚举
