@@ -139,6 +139,7 @@ func Login(c *gin.Context) {
 	}
 
 	if !helper.CheckPassHash(req.Password, user.Password) {
+		j.Message = "密码不正确"
 		j.FailAuth(c)
 		return
 	}
