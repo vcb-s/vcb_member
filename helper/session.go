@@ -13,6 +13,7 @@ func (v session) Set(namespace string, name string, value string) {
 	scopeData := v[namespace]
 	if scopeData == nil {
 		v[namespace] = map[string]string{}
+		scopeData = v[namespace]
 	}
 
 	scopeData[name] = value
