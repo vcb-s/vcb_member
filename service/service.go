@@ -26,7 +26,7 @@ func UserCardList(c *gin.Context) {
 		return
 	}
 
-	var sqlBuilder = models.GetDBHelper()
+	var sqlBuilder = models.GetDBHelper().Not("hide", 1)
 
 	if req.Group > 0 {
 		sqlBuilder = sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
