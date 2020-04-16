@@ -88,6 +88,28 @@ func UserCardList(c *gin.Context) {
 	return
 }
 
+// TinyUserCardList 用户列表（登录页面用）
+func TinyUserCardList(c *gin.Context) {
+	var (
+		j            JSONData
+		userCardList = make([]tinyUserListResponseRes, 0)
+	)
+
+	var sqlBuilder = models.GetDBHelper()
+
+	total := 0
+
+	err := sqlBuilder.Find(&userCardList).Count(&total).Error
+	if err != nil {
+		j.ServerError(c, err)
+		return
+	}
+
+	j.Data = map[string]interface{}{"res": userCardList, "total": total}
+	j.ResponseOK(c)
+	return
+}
+
 // GroupList 组别列表
 func GroupList(c *gin.Context) {
 	var (

@@ -107,6 +107,12 @@ type pagination struct {
 type userListResponseRes struct {
 	models.UserCard
 }
+type tinyUserListResponseRes struct {
+	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
+	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
+	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
+}
 
 // 组别列表
 type userGroupListResponseRes struct {
