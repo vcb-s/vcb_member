@@ -173,7 +173,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.Writer.Header().Set("x-token", token)
+	c.Writer.Header().Set("X-Token", token)
 
 	j.ResponseOK(c)
 	return
@@ -445,4 +445,9 @@ func UpdateUser(c *gin.Context) {
 
 	j.ResponseOK(c)
 	return
+}
+
+// PersonInfo 个人信息
+func PersonInfo(c *gin.Context) {
+	//
 }
