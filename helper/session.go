@@ -4,39 +4,64 @@ type session map[string]map[string]string
 
 // Session 全局内存储存
 // 推荐结构为： map[namespace]map[uid]value
-var Session session = session{}
+var Session = session{}
 
-// AuthToken namespace
-const AuthToken = "AuthToken"
+// AuthTokenNamespace namespace
+const AuthTokenNamespace = "AuthToken"
 
-func (v session) Set(namespace string, name string, value string) {
+func (v session) Set(namespace string, key string, value string) {
 	scopeData := v[namespace]
 	if scopeData == nil {
-		v[namespace] = map[string]string{}
-		scopeData = v[namespace]
+		scopeData = map[string]string{}
+		v[namespace] = scopeData
 	}
 
-	scopeData[name] = value
+	scopeData[key] = value
 }
 
-func (v session) Get(namespace string, name string) string {
+func (v session) Get(namespace string, key string) string {
 	scopeData := v[namespace]
 	if scopeData == nil {
 		return ""
 	}
 
-	value := scopeData[name]
-	if len(value) == 0 {
+	return scopeData[key]
+}
+
+func (v session) Del(namespace string, key string) {
+	scopeData := v[namespace]
+	if scopeData == nil {
+		return
+	}
+	v.Set(namespace, key, "")
+}
+
+func (v session) ClearByValue(namespace string, value string) {
+	scopeData := v[namespace]
+	if scopeData == nil {
+		return
+	}
+	for k, v := range scopeData {
+		if v == value {
+			delete(scopeData, k)
+		}
+	}
+	// v[namespace] = scopeData
+}
+
+func (v session) SearchByValue(namespace string, value string) string {
+	scopeData := v[namespace]
+	if scopeData == nil {
 		return ""
 	}
-
-	return value
+	for k, v := range scopeData {
+		if v == value {
+			return k
+		}
+	}
+	return ""
 }
 
-func (v session) Del(namespace string, name string) {
-	v.Set(namespace, name, "")
-}
-
-func (v session) Has(namespace string, name string) bool {
-	return len(v.Get(namespace, name)) == 0
+func (v session) Has(namespace string, key string) bool {
+	return v.Get(namespace, key) != ""
 }

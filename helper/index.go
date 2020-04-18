@@ -40,23 +40,27 @@ func GenToken(uid string) (string, error) {
 	var claims jwt.Claims
 	now := time.Now().Round(time.Second)
 	claims.Issuer = jwtIssuer
+	claims.ID = uid
+	claims.KeyID = Session.SearchByValue(AuthTokenNamespace, claims.ID)
+	if claims.KeyID == "" {
+		claims.KeyID = GenID()
+	}
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtExpires))
-	claims.Subject = uid
 
 	token, err := claims.HMACSign(jwt.HS256, tokenSignKey)
 	if err != nil {
 		return "", err
 	}
 
-	Session.Set(AuthToken, uid, "1")
+	Session.Set(AuthTokenNamespace, claims.KeyID, claims.ID)
 
 	return string(token), nil
 }
 
 // CheckToken 检查jwt
-func CheckToken(tokenString []byte) (string, error) {
-	claims, err := jwt.HMACCheck(tokenString, tokenSignKey)
+func CheckToken(token []byte) (string, error) {
+	claims, err := jwt.HMACCheck(token, tokenSignKey)
 	if err != nil {
 		return "", err
 	}
@@ -65,11 +69,11 @@ func CheckToken(tokenString []byte) (string, error) {
 		return "", errors.New(ErrorExpired)
 	}
 
-	if !Session.Has(AuthToken, claims.Subject) {
+	if !Session.Has(AuthTokenNamespace, claims.KeyID) {
 		return "", errors.New(ErrorInvalid)
 	}
 
-	return claims.Subject, nil
+	return claims.ID, nil
 }
 
 // CalcPassHash 获取一个安全的密码Hash
