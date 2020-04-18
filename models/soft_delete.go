@@ -4,7 +4,8 @@ import "time"
 
 // SoftDeletedModel 设置软删键值
 type SoftDeletedModel struct {
-	CreatedAt time.Time `json:"create_at" form:"create_at" gorm:"column:create_at"`
-	UpdatedAt time.Time `json:"update_at" form:"update_at" gorm:"column:update_at"`
-	DeletedAt time.Time `json:"delete_at" form:"delete_at" gorm:"column:deleted_at"`
+	// 这里统一omit掉，不对外输出。需要输出的时候再覆盖定义
+	CreatedAt time.Time `json:"-" form:"-" gorm:"column:create_at"`
+	UpdatedAt time.Time `json:"-" form:"-" gorm:"column:update_at"`
+	DeletedAt time.Time `json:"-" form:"-" gorm:"column:deleted_at"`
 }
