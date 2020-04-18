@@ -17,6 +17,7 @@ type userListReq struct {
 	Sticky   int    `json:"sticky" form:"sticky"`
 	Current  int    `json:"page" form:"page"`
 	PageSize int    `json:"pageSize" form:"pageSize"`
+	Tiny     int    `json:"tiny" form:"tiny"`
 }
 type loginReq struct {
 	UID      string `json:"uid" form:"uid" binding:"required"`

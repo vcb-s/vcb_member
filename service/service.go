@@ -28,6 +28,9 @@ func UserCardList(c *gin.Context) {
 
 	var sqlBuilder = models.GetDBHelper().Not("hide", 1)
 
+	if req.Tiny == 1 {
+		sqlBuilder = sqlBuilder.Select("`id`, `uid`, `avast`, `nickname`")
+	}
 	if req.Group > 0 {
 		sqlBuilder = sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
 	}
@@ -57,7 +60,7 @@ func UserCardList(c *gin.Context) {
 
 	// 乱序
 	originUserCardListLen := len(userCardList)
-	if req.Sticky != 1 && originUserCardListLen > 0 {
+	if req.Sticky != 1 && req.Tiny != 1 && originUserCardListLen > 0 {
 		// 没有筛选置顶，也就是数组需要乱序
 		// 如果筛选了置顶整个数组就是有顺序的
 		stickyUserList := make([]userListResponseRes, 0)
@@ -92,10 +95,10 @@ func UserCardList(c *gin.Context) {
 func TinyUserCardList(c *gin.Context) {
 	var (
 		j            JSONData
-		userCardList = make([]tinyUserListResponseRes, 0)
+		userCardList = make([]userListResponseRes, 0)
 	)
 
-	var sqlBuilder = models.GetDBHelper()
+	var sqlBuilder = models.GetDBHelper().Select("`id`, `uid`, `avast`, `nickname`")
 
 	total := 0
 
