@@ -25,6 +25,16 @@ func (m User) TableName() string {
 	return "user"
 }
 
+// IsBan 是否可以管理对应uid用户
+func (m User) IsBan() bool {
+	return m.Ban == 1
+}
+
+// CanManagePerson 是否可以管理对应uid用户
+func (m User) CanManagePerson(uidInRequest string) bool {
+	return !m.IsBan() && (m.IsAdmin == 1 || m.UID == uidInRequest)
+}
+
 // UserCard 用户表
 type UserCard struct {
 	ID       string `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
@@ -35,6 +45,7 @@ type UserCard struct {
 	Bio      string `json:"bio,omitempty" form:"bio" gorm:"column:bio"`
 	Nickname string `json:"nickname,omitempty" form:"nickname" gorm:"column:nickname"`
 	Job      string `json:"job,omitempty" form:"job" gorm:"column:job"`
+	Hide     int    `json:"hide,omitempty" form:"hide" gorm:"column:hide"`
 	Retired  int    `json:"retired,omitempty" form:"retired" gorm:"column:retired"`
 	SoftDeletedModel
 }
@@ -42,6 +53,16 @@ type UserCard struct {
 // TableName 指示 User 表名
 func (m UserCard) TableName() string {
 	return "user_crad"
+}
+
+// IsRetired 指示 卡片 是否已退休
+func (m UserCard) IsRetired() bool {
+	return m.Retired == 1
+}
+
+// IsHide 指示 卡片 是否被隐藏
+func (m UserCard) IsHide() bool {
+	return m.Hide == 1
 }
 
 // UserCardGroup 组别表
