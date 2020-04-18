@@ -18,11 +18,9 @@ func AuthMiddleware(c *gin.Context) {
 
 	uid, err := helper.CheckToken(originToken)
 	if err != nil {
-		// 不是过期错误就不需要检查refreshToken
-		if err != nil {
-			j.FailAuth(c)
-			return
-		}
+		j.Message = err.Error()
+		j.FailAuth(c)
+		return
 	}
 	c.Request.Header.Set("uid", uid)
 
