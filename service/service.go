@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -18,7 +19,7 @@ func UserCardList(c *gin.Context) {
 	var (
 		j            JSONData
 		req          userListReq
-		userCardList = make([]userListResponseRes, 0)
+		userCardList = make([]models.UserCard, 0)
 	)
 	if err := c.ShouldBind(&req); err != nil {
 		j.Message = err.Error()
@@ -63,7 +64,7 @@ func UserCardList(c *gin.Context) {
 	if req.Sticky != 1 && req.Tiny != 1 && originUserCardListLen > 0 {
 		// 没有筛选置顶，也就是数组需要乱序
 		// 如果筛选了置顶整个数组就是有顺序的
-		stickyUserList := make([]userListResponseRes, 0)
+		stickyUserList := make([]models.UserCard, 0)
 		lastStickyUserIndex := 0
 
 		// 找到置顶部分
@@ -95,7 +96,7 @@ func UserCardList(c *gin.Context) {
 func TinyUserCardList(c *gin.Context) {
 	var (
 		j            JSONData
-		userCardList = make([]userListResponseRes, 0)
+		userCardList = make([]models.UserCard, 0)
 	)
 
 	var sqlBuilder = models.GetDBHelper().Select("`id`, `uid`, `avast`, `nickname`")
@@ -119,7 +120,7 @@ func GroupList(c *gin.Context) {
 		j JSONData
 	)
 
-	userGroupList := make([]userGroupListResponseRes, 0)
+	userGroupList := make([]models.UserCard, 0)
 
 	total := 0
 
@@ -146,7 +147,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if err := models.GetDBHelper().First(&user, req.UID).Error; err != nil {
+	if err := models.GetDBHelper().First(&user, "`id` = ?", req.UID).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.Message = "用户不存在"
 			j.NotAcceptable(c)
@@ -203,7 +204,7 @@ func ResetPass(c *gin.Context) {
 		userToReset.UID = req.UID
 	}
 
-	if err := models.GetDBHelper().First(&userInAuth, uidInAuth).Error; err != nil {
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.BadRequest(c)
 			return
@@ -212,7 +213,7 @@ func ResetPass(c *gin.Context) {
 		return
 	}
 
-	if userInAuth.IsAdmin != 1 {
+	if !userInAuth.IsAdmin() {
 		if !helper.CheckPassHash(req.Current, userInAuth.Password) {
 			j.Message = "密码错误"
 			j.FailAuth(c)
@@ -419,13 +420,13 @@ func UpdateUser(c *gin.Context) {
 	req.UID = userToUpdate.UID
 
 	// 查询权限
-	if err := models.GetDBHelper().First(&userInAuth).Error; err != nil {
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.UID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
 
 	// 不是管理员且uid不匹配的话
-	if userToUpdate.UID != userInAuth.UID && userInAuth.IsAdmin != 1 {
+	if userToUpdate.UID != userInAuth.UID && !userInAuth.IsAdmin() {
 		j.Message = "不允许修改他人信息"
 		j.FailAuth(c)
 		return
@@ -450,7 +451,82 @@ func UpdateUser(c *gin.Context) {
 	return
 }
 
-// PersonInfo 个人信息
+// PersonInfo 个人卡片列表
 func PersonInfo(c *gin.Context) {
-	//
+	var (
+		j   JSONData
+		req personInfoReq
+
+		uidInAuth     = c.Request.Header.Get("uid")
+		userInAuth    models.User
+		userInRequest models.User
+
+		userCardList = make([]models.UserCard, 0)
+		userList     = make([]models.User, 0)
+	)
+
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	uidInRequest := req.UID
+	if uidInRequest == "" {
+		uidInRequest = uidInAuth
+	}
+
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil || !userInAuth.CanManagePerson(uidInRequest) {
+		j.Message = "你无权获取该用户信息"
+		j.BadRequest(c)
+		return
+	}
+
+	if err := models.GetDBHelper().First(&userInRequest, "`id` = ?", uidInRequest).Error; err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	cardTotal := 0
+	userTotal := 0
+	{
+		var sqlBuilder = models.GetDBHelper().Where("`uid` = ?", uidInRequest)
+
+		err := sqlBuilder.Find(&userCardList).Count(&cardTotal).Error
+		if err != nil {
+			j.Message = err.Error()
+			j.BadRequest(c)
+			return
+		}
+	}
+
+	if userInRequest.IsAdmin() {
+		var sqlBuilder = models.GetDBHelper()
+		groupsBelongUser := strings.Split(userInRequest.Group, ",")
+
+		for _, group := range groupsBelongUser {
+			sqlBuilder = sqlBuilder.Or("`group` like ?", fmt.Sprintf("%%%s%%", group))
+		}
+
+		if err := sqlBuilder.Find(&userList).Count(&userTotal).Error; err != nil {
+			j.Message = err.Error()
+			j.BadRequest(c)
+			return
+		}
+	}
+
+	j.Data = map[string]interface{}{
+		"info": userInRequest,
+		"cards": map[string]interface{}{
+			"total": cardTotal,
+			"res":   userCardList,
+		},
+		"users": map[string]interface{}{
+			"total": userTotal,
+			"res":   userList,
+		},
+	}
+	j.ResponseOK(c)
+	return
 }

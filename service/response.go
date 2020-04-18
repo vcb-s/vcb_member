@@ -103,12 +103,7 @@ type pagination struct {
 	Total    int `json:"total" form:"total"`
 }
 
-// 用户列表
-type userListResponseRes struct {
-	models.UserCard
-}
-
-// 组别列表
-type userGroupListResponseRes struct {
-	models.UserCardGroup
+type userCardWithGroup struct {
+	models.User
+	Group string `json:"group,omitempty" form:"group"`
 }

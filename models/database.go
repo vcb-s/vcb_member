@@ -14,15 +14,21 @@ import (
 // User 用户表
 type User struct {
 	UID      string `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	Password string `json:"password,omitempty" form:"password" gorm:"column:pass"`
-	IsAdmin  int8   `json:"isAdmin,omitempty" form:"isAdmin" gorm:"column:is_admin"`
+	Password string `json:"-" form:"-" gorm:"column:pass"`
+	Admin    int8   `json:"isAdmin,omitempty" form:"isAdmin" gorm:"column:is_admin"`
 	Ban      int8   `json:"ban,omitempty" form:"ban" gorm:"column:ban"`
+	Group    string `json:"group,omitempty" form:"group" gorm:"column:group"`
 	SoftDeletedModel
 }
 
 // TableName 指示 User 表名
 func (m User) TableName() string {
 	return "user"
+}
+
+// IsAdmin 是否可以管理对应uid用户
+func (m User) IsAdmin() bool {
+	return m.Admin == 1
 }
 
 // IsBan 是否可以管理对应uid用户
@@ -32,14 +38,14 @@ func (m User) IsBan() bool {
 
 // CanManagePerson 是否可以管理对应uid用户
 func (m User) CanManagePerson(uidInRequest string) bool {
-	return !m.IsBan() && (m.IsAdmin == 1 || m.UID == uidInRequest)
+	return !m.IsBan() && (m.Admin == 1 || m.UID == uidInRequest)
 }
 
-// UserCard 用户表
+// UserCard 卡片表
 type UserCard struct {
 	ID       string `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
 	UID      string `json:"uid,omitempty" form:"uid" gorm:"column:uid"`
-	Group    string `json:"group,omitempty" form:"group" gorm:"column:group"`
+	Group    string `json:"-" form:"-" gorm:"column:group"`
 	Order    int    `json:"order,omitempty" form:"order" gorm:"column:order"`
 	Avast    string `json:"avast,omitempty" form:"avast" gorm:"column:avast"`
 	Bio      string `json:"bio,omitempty" form:"bio" gorm:"column:bio"`

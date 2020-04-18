@@ -46,6 +46,9 @@ func init() {
 		adminWithAuth := root.Group("/admin")
 		adminWithAuth.Use(service.AuthMiddleware)
 
+		// 查询用户信息及其卡片列表
+		adminWithAuth.POST("/personInfo", service.PersonInfo)
+
 		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)
 		// 绑定主站账号

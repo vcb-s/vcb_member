@@ -1,7 +1,6 @@
 package service
 
 import (
-	"time"
 	"vcb_member/models"
 )
 
@@ -34,9 +33,9 @@ type loginWithWPCodeReq struct {
 type createBindForWPReq = loginWithWPCodeReq
 type updateUserReq struct {
 	models.UserCard
-	ID        string     `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
-	UID       string     `json:",omitempty" form:",omitempty" gorm:"column:uid"`
-	CreatedAt time.Time  `json:",omitempty" form:",omitempty"`
-	UpdatedAt time.Time  `json:",omitempty" form:",omitempty"`
-	DeletedAt *time.Time `json:",omitempty" form:",omitempty"`
+	ID  string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
+	UID string `json:"-" form:"-" gorm:"column:uid"`
+}
+type personInfoReq struct {
+	UID string `json:"uid,omitempty" form:"uid,omitempty"`
 }
