@@ -13,10 +13,10 @@ import (
 
 // User 用户表
 type User struct {
-	UID      string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	Password string `json:"password" form:"password" gorm:"column:pass"`
-	IsAdmin  int8   `json:"isAdmin" form:"isAdmin" gorm:"column:is_admin"`
-	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
+	UID      string `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Password string `json:"password,omitempty" form:"password" gorm:"column:pass"`
+	IsAdmin  int8   `json:"isAdmin,omitempty" form:"isAdmin" gorm:"column:is_admin"`
+	Ban      int8   `json:"ban,omitempty" form:"ban" gorm:"column:ban"`
 	SoftDeletedModel
 }
 
@@ -27,15 +27,15 @@ func (m User) TableName() string {
 
 // UserCard 用户表
 type UserCard struct {
-	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
-	Group    string `json:"group" form:"group" gorm:"column:group"`
-	Order    int    `json:"order" form:"order" gorm:"column:order"`
-	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
-	Bio      string `json:"bio" form:"bio" gorm:"column:bio"`
-	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
-	Job      string `json:"job" form:"job" gorm:"column:job"`
-	Retired  int    `json:"retired" form:"retired" gorm:"column:retired"`
+	ID       string `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	UID      string `json:"uid,omitempty" form:"uid" gorm:"column:uid"`
+	Group    string `json:"group,omitempty" form:"group" gorm:"column:group"`
+	Order    int    `json:"order,omitempty" form:"order" gorm:"column:order"`
+	Avast    string `json:"avast,omitempty" form:"avast" gorm:"column:avast"`
+	Bio      string `json:"bio,omitempty" form:"bio" gorm:"column:bio"`
+	Nickname string `json:"nickname,omitempty" form:"nickname" gorm:"column:nickname"`
+	Job      string `json:"job,omitempty" form:"job" gorm:"column:job"`
+	Retired  int    `json:"retired,omitempty" form:"retired" gorm:"column:retired"`
 	SoftDeletedModel
 }
 
@@ -46,8 +46,8 @@ func (m UserCard) TableName() string {
 
 // UserCardGroup 组别表
 type UserCardGroup struct {
-	ID   int    `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	Name string `json:"name" form:"name" gorm:"column:name"`
+	ID   int    `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Name string `json:"name,omitempty" form:"name" gorm:"column:name"`
 }
 
 // TableName 指示 UserGroup 表名
@@ -65,10 +65,10 @@ const (
 
 // UserAssociation 绑定授权表
 type UserAssociation struct {
-	ID       string              `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
-	UID      string              `json:"uid" form:"uid" gorm:"column:uid"`
-	AuthCode string              `json:"association" form:"association" gorm:"column:auth"`
-	Type     UserAssociationType `json:"type" form:"type" gorm:"column:type"`
+	ID       string              `json:"id,omitempty" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	UID      string              `json:"uid,omitempty" form:"uid" gorm:"column:uid"`
+	AuthCode string              `json:"association,omitempty" form:"association" gorm:"column:auth"`
+	Type     UserAssociationType `json:"type,omitempty" form:"type" gorm:"column:type"`
 	SoftDeletedModel
 }
 
