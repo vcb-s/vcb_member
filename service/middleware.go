@@ -25,14 +25,4 @@ func AuthMiddleware(c *gin.Context) {
 	c.Request.Header.Set("uid", uid)
 
 	c.Next()
-
-	if err == nil && !c.IsAborted() {
-		newToken, err := helper.GenToken(uid)
-		if err != nil {
-			j.ServerError(c, err)
-			return
-		}
-		c.Writer.Header().Set("token", newToken)
-	}
-
 }

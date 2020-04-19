@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 	"vcb_member/conf"
+	"vcb_member/models"
 
 	"github.com/btnguyen2k/olaf"
 	argon "github.com/dwin/goArgonPass"
@@ -14,7 +15,9 @@ import (
 // new Number( new Date('Mon Dec 01 2010 00:00:00 GMT+0800') )
 const timeStart = 1291132800000
 const jwtIssuer = "vcb-member"
-const jwtExpires = 30 * time.Minute
+
+// 暂时有效期为一年，因为token全部内存指定了
+const jwtExpires = 365 * 30 * 24 * time.Hour
 
 var idGenerator *olaf.Olaf
 var tokenSignKey = []byte(conf.Main.Jwt.Mac)
@@ -35,16 +38,38 @@ func GenID() string {
 	return idGenerator.Id64Ascii()
 }
 
-// GenToken 获取一个jwt
+// getUserTokenID 获取用户对应的tokenID，以此保持登录token稳定
+func getUserTokenID(uid string) string {
+	tokenID := Session.SearchByValue(AuthTokenNamespace, uid)
+
+	if len(tokenID) == 0 {
+		// 查询一次数据库，不考虑用户不存在的情况
+		var user models.User
+		models.GetDBHelper().First(&user, "id = ?", uid)
+
+		if len(user.LastTokenID) == 0 {
+			tokenID = GenID()
+			user.LastTokenID = tokenID
+			// 不处理错误，暂时没看到抛出的价值
+			// 即使出现错误也要王Session中存一个tokenID，防止击穿导致疯狂查数据库
+			models.GetDBHelper().Model(&user).Updates(&user)
+		} else {
+			tokenID = user.LastTokenID
+		}
+	}
+
+	Session.Set(AuthTokenNamespace, tokenID, uid)
+
+	return tokenID
+}
+
+// GenToken 获取一个jwt，不负责校验用户的合法性
 func GenToken(uid string) (string, error) {
 	var claims jwt.Claims
 	now := time.Now().Round(time.Second)
 	claims.Issuer = jwtIssuer
 	claims.ID = uid
-	claims.KeyID = Session.SearchByValue(AuthTokenNamespace, claims.ID)
-	if claims.KeyID == "" {
-		claims.KeyID = GenID()
-	}
+	claims.KeyID = getUserTokenID(uid)
 	claims.Issued = jwt.NewNumericTime(now)
 	claims.Expires = jwt.NewNumericTime(now.Add(jwtExpires))
 
@@ -52,8 +77,6 @@ func GenToken(uid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	Session.Set(AuthTokenNamespace, claims.KeyID, claims.ID)
 
 	return string(token), nil
 }
@@ -69,7 +92,10 @@ func CheckToken(token []byte) (string, error) {
 		return "", errors.New(ErrorExpired)
 	}
 
-	if !Session.Has(AuthTokenNamespace, claims.KeyID) {
+	sessionTokenID := getUserTokenID(claims.ID)
+
+	// 校验一次keyID
+	if sessionTokenID != claims.KeyID {
 		return "", errors.New(ErrorInvalid)
 	}
 
