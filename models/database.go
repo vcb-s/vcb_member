@@ -46,7 +46,7 @@ func (m User) CanManagePerson(uidInRequest string) bool {
 type UserCard struct {
 	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
 	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
-	Group    string `json:"-" form:"-" gorm:"column:group"`
+	Group    string `json:"group" form:"group" gorm:"column:group"`
 	Order    int    `json:"order" form:"order" gorm:"column:order"`
 	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
 	Bio      string `json:"bio" form:"bio" gorm:"column:bio"`
