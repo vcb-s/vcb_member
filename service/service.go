@@ -398,8 +398,8 @@ func DeleteWPBind(c *gin.Context) {
 	return
 }
 
-// UpdateUser 修改用户信息
-func UpdateUser(c *gin.Context) {
+// UpdateUserCard 修改用户信息
+func UpdateUserCard(c *gin.Context) {
 	var (
 		j            JSONData
 		req          updateUserReq
@@ -421,9 +421,6 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// 覆盖前端传入的UID
-	req.UID = userToUpdate.UID
-
 	// 查询权限
 	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.UID).Error; err != nil {
 		j.ServerError(c, err)
@@ -440,15 +437,8 @@ func UpdateUser(c *gin.Context) {
 	updateBuilder := models.GetDBHelper().Where("id = ?", req.ID)
 
 	// 修改键值
-	result := updateBuilder.Update(&req)
-	if result.Error != nil {
-		j.ServerError(c, result.Error)
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		j.Message = "没有修改任何内容"
-		j.ServerError(c, result.Error)
+	if err := updateBuilder.Update(&req).Error; err != nil {
+		j.ServerError(c, err)
 		return
 	}
 
