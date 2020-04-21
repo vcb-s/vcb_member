@@ -27,8 +27,11 @@ func UserCardList(c *gin.Context) {
 		return
 	}
 
-	var sqlBuilder = models.GetDBHelper().Not("hide", 1).Order("`order` DESC").Order("`id` ASC")
+	var sqlBuilder = models.GetDBHelper().Order("`order` DESC").Order("`id` ASC")
 
+	if req.IncludeHide != 1 {
+		sqlBuilder = sqlBuilder.Not("hide", 1)
+	}
 	if req.Tiny == 1 {
 		sqlBuilder = sqlBuilder.Select("`id`, `uid`, `avast`, `nickname`")
 	}

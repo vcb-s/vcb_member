@@ -10,14 +10,15 @@ type userSearchReq struct {
 	Keyword string `json:"keyword" form:"keyword" binding:"required"`
 }
 type userListReq struct {
-	CardID   string `json:"id" form:"id"`
-	KeyWord  string `json:"keyword" form:"keyword"`
-	Group    int    `json:"group" form:"group"`
-	Retired  int    `json:"retired" form:"retired"`
-	Sticky   int    `json:"sticky" form:"sticky"`
-	Current  int    `json:"page" form:"page"`
-	PageSize int    `json:"pageSize" form:"pageSize"`
-	Tiny     int    `json:"tiny" form:"tiny"`
+	CardID      string `json:"id" form:"id"`
+	KeyWord     string `json:"keyword" form:"keyword"`
+	IncludeHide int    `json:"includeHide" form:"includeHide"`
+	Group       int    `json:"group" form:"group"`
+	Retired     int    `json:"retired" form:"retired"`
+	Sticky      int    `json:"sticky" form:"sticky"`
+	Current     int    `json:"page" form:"page"`
+	PageSize    int    `json:"pageSize" form:"pageSize"`
+	Tiny        int    `json:"tiny" form:"tiny"`
 }
 type loginReq struct {
 	UID      string `json:"uid" form:"uid" binding:"required"`
