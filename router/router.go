@@ -47,7 +47,7 @@ func init() {
 		adminWithAuth.Use(service.AuthMiddleware)
 
 		// 查询用户信息及其卡片列表
-		adminWithAuth.POST("/personInfo", service.PersonInfo)
+		adminWithAuth.GET("/personInfo", service.PersonInfo)
 
 		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)

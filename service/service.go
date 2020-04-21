@@ -27,7 +27,7 @@ func UserCardList(c *gin.Context) {
 		return
 	}
 
-	var sqlBuilder = models.GetDBHelper().Not("hide", 1)
+	var sqlBuilder = models.GetDBHelper().Not("hide", 1).Order("`order` DESC").Order("`id` ASC")
 
 	if req.Tiny == 1 {
 		sqlBuilder = sqlBuilder.Select("`id`, `uid`, `avast`, `nickname`")
@@ -44,12 +44,14 @@ func UserCardList(c *gin.Context) {
 	if req.PageSize > 0 && req.Current > 0 {
 		sqlBuilder = sqlBuilder.Limit(req.PageSize).Offset(req.PageSize * (req.Current - 1))
 	}
-	if len(req.KeyWord) > 0 {
-		keyword := fmt.Sprintf("%%%s%%", req.KeyWord)
-		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ?", keyword, keyword)
-	}
 
-	sqlBuilder = sqlBuilder.Order("`order` DESC").Order("`id` ASC")
+	// 有指定 CardID 时就忽略 KeyWord 参数
+	if len(req.CardID) > 0 {
+		sqlBuilder = sqlBuilder.Where("`id` = ?", req.CardID)
+	} else if len(req.KeyWord) > 0 {
+		keyword := fmt.Sprintf("%%%s%%", req.KeyWord)
+		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ? OR `id` = ?", keyword, keyword, req.KeyWord)
+	}
 
 	total := 0
 
@@ -120,7 +122,7 @@ func GroupList(c *gin.Context) {
 		j JSONData
 	)
 
-	userGroupList := make([]models.UserCard, 0)
+	userGroupList := make([]models.UserCardGroup, 0)
 
 	total := 0
 
@@ -503,7 +505,7 @@ func PersonInfo(c *gin.Context) {
 
 	if userInRequest.IsAdmin() {
 		var sqlBuilder = models.GetDBHelper()
-		groupsBelongUser := strings.Split(userInRequest.Group, ",")
+		groupsBelongUser := strings.Split(userInRequest.Admin, ",")
 
 		for _, group := range groupsBelongUser {
 			sqlBuilder = sqlBuilder.Or("`group` like ?", fmt.Sprintf("%%%s%%", group))
