@@ -437,7 +437,7 @@ func UpdateUserCard(c *gin.Context) {
 	updateBuilder := models.GetDBHelper().Where("id = ?", req.ID)
 
 	// 修改键值
-	if err := updateBuilder.Update(&req).Error; err != nil {
+	if err := updateBuilder.Model(&req).Update(&req).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
