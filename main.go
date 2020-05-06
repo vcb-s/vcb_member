@@ -15,6 +15,7 @@ import (
 	_ "vcb_member/inital"
 
 	"vcb_member/conf"
+	"vcb_member/helper"
 	"vcb_member/models"
 	"vcb_member/router"
 )
@@ -22,6 +23,10 @@ import (
 func main() {
 	model := models.GetDBHelper()
 	defer model.Close()
+
+	if p, err := helper.CalcPassHash("123456"); err != nil {
+		fmt.Println("example pass encode for 123456", p)
+	}
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{
