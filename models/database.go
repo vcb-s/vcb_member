@@ -17,6 +17,8 @@ type User struct {
 	Password    string `json:"-" form:"-" gorm:"column:pass"`
 	Admin       string `json:"admin" form:"admin" gorm:"column:admin"`
 	Ban         int8   `json:"ban" form:"ban" gorm:"column:ban"`
+	Avast       string `json:"avast" form:"avast" gorm:"column:avast"`
+	Nickname    string `json:"nickname" form:"nickname" gorm:"column:nickname"`
 	Group       string `json:"group" form:"group" gorm:"column:group"`
 	LastTokenID string `json:"-" form:"-" gorm:"column:last_token_key_id"`
 	SoftDeletedModel
