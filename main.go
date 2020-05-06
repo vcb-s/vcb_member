@@ -24,8 +24,11 @@ func main() {
 	model := models.GetDBHelper()
 	defer model.Close()
 
-	if p, err := helper.CalcPassHash("123456"); err != nil {
-		fmt.Println("example pass encode for 123456", p)
+	if p, err := helper.CalcPassHash("12345678"); err == nil {
+		fmt.Println("example pass encode for 12345678", p)
+	} else {
+		fmt.Println(err)
+		return
 	}
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
