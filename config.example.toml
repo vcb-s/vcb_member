@@ -1,16 +1,19 @@
 [database]
-host = ""
-port = 0
-user = ''
-pass = ''
-dbname = ''
+host = "127.0.0.1"
+port = 3306
+user = 'root'
+pass = '0921'
+dbname = 'vcbs_member'
 
 [jwt]
-mac = ""
-encryption = ""
+# key length must larger than 256
+# https://security.stackexchange.com/a/146889
+# can get by gen a 32 ch len pass by keepass(ascii char set)
+# for detecte if it a not a wrong decode, leave some cjk here: 我爱你, inori.
+mac = "n#:^`R$^A:=,pbTN&$dX#R2F'(yG-Q--"
 
 [server]
-port = 0
+port = 80
 
 [third.wp]
 clientID = ''
