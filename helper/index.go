@@ -21,7 +21,6 @@ const jwtExpires = 365 * 30 * 24 * time.Hour
 
 var idGenerator *olaf.Olaf
 var tokenSignKey = []byte(conf.Main.Jwt.Mac)
-var refreshTokenSignKey = []byte(conf.Main.Jwt.Encryption)
 
 // ErrorExpired jwt过期
 const ErrorExpired = "Expired"

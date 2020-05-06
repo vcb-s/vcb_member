@@ -20,8 +20,7 @@ type conf struct {
 		Dbname string
 	}
 	Jwt struct {
-		Mac        string
-		Encryption string
+		Mac string
 	}
 	Server struct {
 		Port int
