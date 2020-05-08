@@ -115,12 +115,12 @@ func CalcPassHash(pass string) (string, error) {
 
 // CheckPassHash 校验密码
 func CheckPassHash(pass string, hash string) bool {
-	raw, err := argon2.Decode([]byte(pass))
+	raw, err := argon2.Decode([]byte(hash))
 	if err != nil {
 		return false
 	}
 
-	ok, err := raw.Verify([]byte(hash))
+	ok, err := raw.Verify([]byte(pass))
 	if err != nil {
 		return false
 	}
