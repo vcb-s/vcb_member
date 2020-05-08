@@ -24,8 +24,8 @@ func main() {
 	model := models.GetDBHelper()
 	defer model.Close()
 
-	if p, err := helper.CalcPassHash("12345678"); err == nil {
-		fmt.Println("example pass encode for 12345678", p)
+	if p, err := helper.CalcPassHash("0000"); err == nil {
+		fmt.Println("example pass encode for 0000", p)
 	} else {
 		fmt.Println(err)
 		return
