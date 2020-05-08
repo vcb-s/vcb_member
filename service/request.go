@@ -27,7 +27,7 @@ type loginReq struct {
 type resetPassReq struct {
 	UID         string `json:"uid" form:"uid"`
 	Current     string `json:"current" form:"current"`
-	NewPassword string `json:"new" form:"new" binding:"required"`
+	NewPassword string `json:"new" form:"new"`
 }
 type loginWithWPCodeReq struct {
 	Code string `json:"code" form:"code" binding:"required"`
