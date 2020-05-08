@@ -471,14 +471,20 @@ func PersonInfo(c *gin.Context) {
 		uidInRequest = uidInAuth
 	}
 
-	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil || !userInAuth.CanManagePerson(uidInRequest) {
-		j.Message = "你无权获取该用户信息"
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
+		j.Message = err.Error()
 		j.BadRequest(c)
 		return
 	}
 
 	if err := models.GetDBHelper().First(&userInRequest, "`id` = ?", uidInRequest).Error; err != nil {
 		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	if !userInAuth.CanManagePerson(userInRequest) {
+		j.Message = "你无权获取该用户信息"
 		j.BadRequest(c)
 		return
 	}

@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,19 +30,27 @@ func (m User) TableName() string {
 	return "user"
 }
 
-// IsAdmin 是否可以管理对应uid用户
+// IsAdmin 是否是管理层
 func (m User) IsAdmin() bool {
 	return len(m.Admin) > 0
 }
 
-// IsBan 是否可以管理对应uid用户
+// IsBan 是否是被封禁用户
 func (m User) IsBan() bool {
 	return m.Ban == 1
 }
 
-// CanManagePerson 是否可以管理对应uid用户
-func (m User) CanManagePerson(uidInRequest string) bool {
-	return !m.IsBan() && (m.IsAdmin() || m.UID == uidInRequest)
+// CanManagePerson 是否可以管理对应用户
+func (m User) CanManagePerson(user User) bool {
+	result := !m.IsBan() && (m.UID == user.UID)
+	if !result {
+		for _, groupID := range strings.Split(",", user.Group) {
+			if strings.Contains(m.Admin, groupID) {
+				result = true
+			}
+		}
+	}
+	return result
 }
 
 // UserCard 卡片表
