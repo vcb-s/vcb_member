@@ -7,7 +7,7 @@ import (
 	"vcb_member/models"
 
 	"github.com/btnguyen2k/olaf"
-	argon "github.com/dwin/goArgonPass"
+	"github.com/matthewhartstonge/argon2"
 	"github.com/pascaldekloe/jwt"
 )
 
@@ -27,6 +27,8 @@ const ErrorExpired = "Expired"
 
 // ErrorInvalid jwt无效
 const ErrorInvalid = "Invalid"
+
+var defaultArgon2 = argon2.DefaultConfig()
 
 func init() {
 	idGenerator = olaf.NewOlafWithEpoch(1, timeStart)
@@ -103,15 +105,25 @@ func CheckToken(token []byte) (string, error) {
 
 // CalcPassHash 获取一个安全的密码Hash
 func CalcPassHash(pass string) (string, error) {
-	return argon.Hash(pass)
+	result, err := defaultArgon2.HashRaw([]byte(pass))
+	if err == nil {
+		return string(result.Encode()), nil
+	}
+
+	return "", err
 }
 
 // CheckPassHash 校验密码
 func CheckPassHash(pass string, hash string) bool {
-	err := argon.Verify(pass, hash)
+	raw, err := argon2.Decode([]byte(pass))
 	if err != nil {
 		return false
 	}
 
-	return true
+	ok, err := raw.Verify([]byte(hash))
+	if err != nil {
+		return false
+	}
+
+	return ok
 }
