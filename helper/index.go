@@ -6,6 +6,8 @@ import (
 	"vcb_member/conf"
 	"vcb_member/models"
 
+	mRand "math/rand"
+
 	"github.com/btnguyen2k/olaf"
 	"github.com/matthewhartstonge/argon2"
 	"github.com/pascaldekloe/jwt"
@@ -37,6 +39,11 @@ func init() {
 // GenID 获取一个雪花ID
 func GenID() string {
 	return idGenerator.Id64Ascii()
+}
+
+// GenCode 获取一个四位随机数
+func GenCode() string {
+	return string(mRand.Intn(9999-999) + 999)
 }
 
 // getUserTokenID 获取用户对应的tokenID，以此保持登录token稳定

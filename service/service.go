@@ -209,7 +209,7 @@ func ResetPass(c *gin.Context) {
 		userToReset.UID = req.UID
 	}
 
-	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
+	if err := models.GetDBHelper().First(&userToReset, "`id` = ?", userToReset.UID).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.BadRequest(c)
 			return
@@ -218,12 +218,28 @@ func ResetPass(c *gin.Context) {
 		return
 	}
 
-	if !userInAuth.IsAdmin() {
-		if !helper.CheckPassHash(req.Current, userInAuth.Password) {
-			j.Message = "密码错误"
-			j.FailAuth(c)
+	if uidInAuth == userToReset.UID {
+		userInAuth = userToReset
+	} else {
+		if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
+			if gorm.IsRecordNotFoundError(err) {
+				j.BadRequest(c)
+				return
+			}
+			j.ServerError(c, err)
 			return
 		}
+		if !userInAuth.IsAdmin() {
+			if !helper.CheckPassHash(req.Current, userInAuth.Password) {
+				j.Message = "密码错误"
+				j.FailAuth(c)
+				return
+			}
+		}
+	}
+
+	if req.NewPassword == "" {
+		req.NewPassword = helper.GenCode()
 	}
 
 	newPass, err := helper.CalcPassHash(req.NewPassword)
