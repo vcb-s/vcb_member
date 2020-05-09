@@ -41,3 +41,7 @@ type updateUserReq struct {
 type personInfoReq struct {
 	UID string `json:"uid,omitempty" form:"uid,omitempty"`
 }
+type kickOffReq struct {
+	UID   string `json:"uid" form:"uid" binding:"required"`
+	Group string `json:"group" form:"group" binding:"required"`
+}

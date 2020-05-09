@@ -57,5 +57,7 @@ func init() {
 		adminWithAuth.POST("/deleteWPBind", service.DeleteWPBind)
 		// 修改自己或他人的信息
 		adminWithAuth.POST("/updateUserCard", service.UpdateUserCard)
+		// 踢出
+		adminWithAuth.POST("/kickoff", service.KickOff)
 	}
 }

@@ -547,3 +547,86 @@ func PersonInfo(c *gin.Context) {
 	j.ResponseOK(c)
 	return
 }
+
+// KickOff 踢出
+func KickOff(c *gin.Context) {
+	var (
+		j             JSONData
+		req           kickOffReq
+		userToKickOff models.User
+		userInAuth    models.User
+	)
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	userInAuth.UID = c.Request.Header.Get("uid")
+	userToKickOff.UID = req.UID
+
+	groupsToRemove := map[string]bool{}
+	for _, group := range strings.Split(req.Group, ",") {
+		groupsToRemove[group] = true
+	}
+
+	if err := models.GetDBHelper().Where(userToKickOff).First(&userInAuth).Error; err != nil {
+		j.ServerError(c, err)
+		return
+	}
+	if err := models.GetDBHelper().Where(userInAuth).First(&userToKickOff).Error; err != nil {
+		j.ServerError(c, err)
+		return
+	}
+
+	if !userInAuth.CanManagePerson(userToKickOff) {
+		j.Message = "你没有权限管理该用户"
+		j.BadRequest(c)
+		return
+	}
+
+	err := models.GetDBHelper().Transaction(func(db *gorm.DB) error {
+		// 更新该用户的组别信息
+		nextGroups := []string{}
+		for _, group := range strings.Split(userToKickOff.Group, ",") {
+			nextGroups = append(nextGroups, group)
+		}
+		userToKickOff.Group = strings.Join(nextGroups, ",")
+		if err := db.Model(userToKickOff).Update(userToKickOff).Error; err != nil {
+			return err
+		}
+
+		// 更新该用户的所有卡片
+		var userCards []models.UserCard
+
+		if err := db.Where(models.UserCard{UID: userToKickOff.UID}).Find(&userCards).Error; err != nil {
+			return err
+		}
+
+		// 这里暂时没找到有什么办法可以在一次sql中update多行
+		for idx := range userCards {
+			nextGroups := []string{}
+			for _, group := range strings.Split(userCards[idx].Group, ",") {
+				nextGroups = append(nextGroups, group)
+			}
+			userCards[idx].Group = strings.Join(nextGroups, ",")
+			if len(nextGroups) == 0 {
+				userCards[idx].Hide = 2
+			}
+
+			if err := db.Where(models.UserCard{ID: userCards[idx].ID}).Update(&userCards[idx]).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		j.ServerError(c, err)
+		return
+	}
+
+	j.ResponseOK(c)
+	return
+}
