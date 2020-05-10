@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +12,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	_ "vcb_member/inital"
+
+	"github.com/rs/zerolog/log"
 
 	"vcb_member/conf"
 	"vcb_member/helper"
@@ -25,9 +26,9 @@ func main() {
 	defer model.Close()
 
 	if p, err := helper.CalcPassHash("0000"); err == nil {
-		fmt.Println("example pass encode for 0000", p)
+		log.Info().Str("example pass encode for 0000", p)
 	} else {
-		fmt.Println(err)
+		log.Error().Err(err)
 		return
 	}
 
@@ -39,7 +40,7 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf(err.Error())
+			log.Error().Err(err)
 		}
 	}()
 
@@ -50,14 +51,14 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shuting down server...")
+	log.Info().Msg("Shuting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown With Error: ", err)
+		log.Error().Err(err).Msg("Server Shutdown With Error")
 	}
 
-	log.Println("Server Shutdown Success")
+	log.Info().Msg("Server Shutdown Success")
 }

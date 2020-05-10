@@ -10,4 +10,5 @@ require (
 	github.com/matthewhartstonge/argon2 v0.1.2
 	github.com/pascaldekloe/jwt v1.9.0
 	github.com/pelletier/go-toml v1.7.0
+	github.com/rs/zerolog v1.18.0
 )
