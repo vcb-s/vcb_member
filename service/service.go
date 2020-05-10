@@ -589,7 +589,9 @@ func KickOff(c *gin.Context) {
 		// 更新该用户的组别信息
 		nextGroups := []string{}
 		for _, group := range strings.Split(userToKickOff.Group, ",") {
-			nextGroups = append(nextGroups, group)
+			if !groupsToRemove[group] {
+				nextGroups = append(nextGroups, group)
+			}
 		}
 		userToKickOff.Group = strings.Join(nextGroups, ",")
 		if err := db.Model(userToKickOff).Update(userToKickOff).Error; err != nil {
@@ -607,14 +609,17 @@ func KickOff(c *gin.Context) {
 		for idx := range userCards {
 			nextGroups := []string{}
 			for _, group := range strings.Split(userCards[idx].Group, ",") {
-				nextGroups = append(nextGroups, group)
+				if !groupsToRemove[group] {
+					nextGroups = append(nextGroups, group)
+				}
 			}
 			userCards[idx].Group = strings.Join(nextGroups, ",")
 			if len(nextGroups) == 0 {
-				userCards[idx].Hide = 2
+				userCards[idx].Hide = 1
 			}
 
-			if err := db.Where(models.UserCard{ID: userCards[idx].ID}).Update(&userCards[idx]).Error; err != nil {
+			// @todo group为空
+			if err := db.Model(models.UserCard{}).Where(models.UserCard{ID: userCards[idx].ID}).Select("group").Update(&userCards[idx]).Error; err != nil {
 				return err
 			}
 		}
