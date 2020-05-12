@@ -250,12 +250,12 @@ func ResetPass(c *gin.Context) {
 
 	userToReset.Password = newPass
 
-	resylt := models.GetDBHelper().Model(&userToReset).Update("password")
-	if resylt.Error != nil {
+	result := models.GetDBHelper().Model(&userToReset).Updates(userToReset)
+	if result.Error != nil {
 		j.ServerError(c, err)
 		return
 	}
-	if resylt.RowsAffected == 0 {
+	if result.RowsAffected == 0 {
 		j.ServerError(c, errors.New("用户不存在"))
 		return
 	}
@@ -453,7 +453,7 @@ func UpdateUserCard(c *gin.Context) {
 	updateBuilder := models.GetDBHelper().Where("id = ?", req.ID)
 
 	// 修改键值
-	if err := updateBuilder.Model(&req).Update(&req).Error; err != nil {
+	if err := updateBuilder.Model(&req).Updates(&req).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
@@ -588,13 +588,21 @@ func KickOff(c *gin.Context) {
 	err := models.GetDBHelper().Transaction(func(db *gorm.DB) error {
 		// 更新该用户的组别信息
 		nextGroups := []string{}
+		nextAdmin := []string{}
 		for _, group := range strings.Split(userToKickOff.Group, ",") {
 			if !groupsToRemove[group] {
 				nextGroups = append(nextGroups, group)
 			}
 		}
-		userToKickOff.Group = strings.Join(nextGroups, ",")
-		if err := db.Model(userToKickOff).Update(userToKickOff).Error; err != nil {
+		for _, group := range strings.Split(userToKickOff.Admin, ",") {
+			if !groupsToRemove[group] {
+				nextAdmin = append(nextAdmin, group)
+			}
+		}
+		if err := db.Model(userToKickOff).Updates(map[string]interface{}{
+			"Group": userToKickOff.Group,
+			"Admin": userToKickOff.Admin,
+		}).Error; err != nil {
 			return err
 		}
 
@@ -614,12 +622,14 @@ func KickOff(c *gin.Context) {
 				}
 			}
 			userCards[idx].Group = strings.Join(nextGroups, ",")
-			if len(nextGroups) == 0 {
+			if len(userCards[idx].Group) == 0 {
 				userCards[idx].Hide = 1
 			}
 
-			// @todo group为空
-			if err := db.Model(models.UserCard{}).Where(models.UserCard{ID: userCards[idx].ID}).Select("group").Update(&userCards[idx]).Error; err != nil {
+			if err := db.Model(&userCards[idx]).Where(models.UserCard{ID: userCards[idx].ID}).Updates(map[string]interface{}{
+				"Group": userCards[idx].Group,
+				"Hide":  userCards[idx].Hide,
+			}).Error; err != nil {
 				return err
 			}
 		}
