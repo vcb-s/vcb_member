@@ -13,6 +13,8 @@ import (
 
 	_ "vcb_member/inital"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/diode"
 	"github.com/rs/zerolog/log"
 
 	"vcb_member/conf"
@@ -22,13 +24,43 @@ import (
 )
 
 func main() {
+	file, err := os.OpenFile("log/log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	defer file.Close()
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to open error log file")
+		panic("can not open log file")
+	}
+
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	log.Logger = log.
+		Output(
+			zerolog.MultiLevelWriter(
+				zerolog.ConsoleWriter{
+					Out:        os.Stderr,
+					TimeFormat: time.RFC3339,
+				},
+				diode.NewWriter(file, 1000, 10*time.Millisecond, func(missed int) {
+					log.Error().Msg("missed log: " + string(missed))
+				}),
+			),
+		).
+		With().
+		Timestamp().
+		Caller().
+		Logger()
+
+	log.Info().Msg("log test success")
+
 	model := models.GetDBHelper()
 	defer model.Close()
 
 	if p, err := helper.CalcPassHash("0000"); err == nil {
-		log.Info().Str("example pass encode for 0000", p)
+		log.Info().Msg("example pass encode for 0000")
+		log.Info().Msg(p)
 	} else {
-		log.Error().Err(err)
+		log.Error().Err(err).Msg("calc pass test failed")
 		return
 	}
 
@@ -40,7 +72,7 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("start server fail")
 		}
 	}()
 
