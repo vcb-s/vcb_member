@@ -5,6 +5,6 @@ import (
 	"time"
 )
 
-func init() {
+func setupMathSeed() {
 	mathRand.Seed(time.Now().Unix())
 }
