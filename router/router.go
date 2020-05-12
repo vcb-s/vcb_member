@@ -44,7 +44,7 @@ func init() {
 	// 带登录验证的部分
 	{
 		adminWithAuth := root.Group("/admin")
-		adminWithAuth.Use(service.AuthMiddleware)
+		adminWithAuth.Use(AuthMiddleware)
 
 		// 查询用户信息及其卡片列表
 		adminWithAuth.GET("/personInfo", service.PersonInfo)

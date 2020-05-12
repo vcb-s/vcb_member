@@ -1,14 +1,15 @@
-package service
+package router
 
 import (
-	"vcb_member/helper"
-
 	"github.com/gin-gonic/gin"
+
+	"vcb_member/helper"
+	"vcb_member/service"
 )
 
 // AuthMiddleware 登录检查以及token重签
 func AuthMiddleware(c *gin.Context) {
-	var j JSONData
+	var j service.JSONData
 	originToken := []byte(c.GetHeader("X-Token"))
 
 	if cap(originToken) == 0 {

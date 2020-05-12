@@ -2,7 +2,6 @@ package service
 
 import (
 	"net/http"
-	"vcb_member/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -101,9 +100,4 @@ type pagination struct {
 	Current  int `json:"page" form:"page"`
 	PageSize int `json:"pageSize" form:"pageSize"`
 	Total    int `json:"total" form:"total"`
-}
-
-type userCardWithGroup struct {
-	models.User
-	Group string `json:"group,omitempty" form:"group"`
 }
