@@ -66,8 +66,8 @@ func KickOff(c *gin.Context) {
 			}
 		}
 		if err := db.Model(userToKickOff).Updates(map[string]interface{}{
-			"Group": userToKickOff.Group,
-			"Admin": userToKickOff.Admin,
+			"Group": strings.Join(nextGroups, ","),
+			"Admin": strings.Join(nextAdmin, ","),
 		}).Error; err != nil {
 			return err
 		}
