@@ -49,6 +49,9 @@ func init() {
 		// 查询用户信息及其卡片列表
 		adminWithAuth.GET("/personInfo", service.PersonInfo)
 
+		// 更新用户信息
+		adminWithAuth.POST("/updateUser", service.UpdateUser)
+
 		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)
 		// 绑定主站账号
