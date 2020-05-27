@@ -6,17 +6,17 @@ import (
 	"vcb_member/models"
 )
 
-type updateUserReq struct {
+type updateCardReq struct {
 	models.UserCard
 	ID  string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
 	UID string `json:"-" form:"-" gorm:"column:uid"`
 }
 
-// UpdateUserCard 修改用户信息
+// UpdateUserCard 修改用户卡片信息
 func UpdateUserCard(c *gin.Context) {
 	var (
 		j            JSONData
-		req          updateUserReq
+		req          updateCardReq
 		userToUpdate models.UserCard
 		userInAuth   models.User = models.User{}
 	)
