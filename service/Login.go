@@ -36,6 +36,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// 如果用户组别为空或者被Ban了
+	if user.Group == "" || user.IsBan() {
+		j.Message = "该账号不允许登录"
+		j.NotAcceptable(c)
+		return
+	}
+
 	// 如果用户密码为空，返回提示找网站组设置初始密码
 	if user.Password == "" {
 		j.Message = "请先联系网站组设置登录数据"
