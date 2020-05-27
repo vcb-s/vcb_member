@@ -57,7 +57,7 @@ func ResetPass(c *gin.Context) {
 			j.ServerError(c, err)
 			return
 		}
-		if !userInAuth.IsAdmin() {
+		if !userInAuth.CanManagePerson(userToReset) {
 			if !helper.CheckPassHash(req.Current, userInAuth.Password) {
 				j.Message = "密码错误"
 				j.FailAuth(c)
@@ -86,6 +86,10 @@ func ResetPass(c *gin.Context) {
 	if result.RowsAffected == 0 {
 		j.ServerError(c, errors.New("用户不存在"))
 		return
+	}
+
+	j.Data = map[string]interface{}{
+		"newPass": req.NewPassword,
 	}
 
 	j.ResponseOK(c)
