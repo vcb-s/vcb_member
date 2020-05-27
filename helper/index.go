@@ -2,15 +2,16 @@ package helper
 
 import (
 	"errors"
-	"time"
-	"vcb_member/conf"
-	"vcb_member/models"
-
 	mRand "math/rand"
+	"strconv"
+	"time"
 
 	"github.com/btnguyen2k/olaf"
 	"github.com/matthewhartstonge/argon2"
 	"github.com/pascaldekloe/jwt"
+
+	"vcb_member/conf"
+	"vcb_member/models"
 )
 
 // timeStart jwt时间偏移
@@ -43,7 +44,7 @@ func GenID() string {
 
 // GenCode 获取一个四位随机数
 func GenCode() string {
-	return string(mRand.Intn(9999-999) + 999)
+	return strconv.Itoa(mRand.Intn(9999-999) + 999)
 }
 
 // getUserTokenID 获取用户对应的tokenID，以此保持登录token稳定
