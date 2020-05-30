@@ -34,16 +34,43 @@ func UserCardList(c *gin.Context) {
 		return
 	}
 
-	var sqlBuilder = models.GetDBHelper().Order("`order` DESC").Order("`id` ASC")
+	UserCardTableName := models.UserCard{}.TableName()
+	UserTableName := models.User{}.TableName()
+
+	var sqlBuilder = models.GetDBHelper().Table(UserCardTableName)
+	sqlBuilder = sqlBuilder.Order("`order` DESC").Order("`id` ASC")
+
+	sqlBuilder = sqlBuilder.Joins(fmt.Sprintf(
+		"left join %s on %s.id = %s.uid",
+		UserTableName,
+		UserTableName,
+		UserCardTableName,
+	))
+
+	sqlBuilder = sqlBuilder.Where(
+		fmt.Sprintf("`%s`.`ban` <> ?", UserTableName),
+		1,
+	)
 
 	if req.IncludeHide != 1 {
-		sqlBuilder = sqlBuilder.Not("hide", 1)
+		sqlBuilder = sqlBuilder.Not(`hide`, 1)
 	}
 	if req.Tiny == 1 {
-		sqlBuilder = sqlBuilder.Select("`id`, `uid`, `avast`, `nickname`")
+		sqlBuilder = sqlBuilder.Select(
+			fmt.Sprintf(
+				"`%s`.`id`, `%s`.`uid`, `%s`.`avast`, `%s`.`nickname`",
+				UserCardTableName,
+				UserCardTableName,
+				UserCardTableName,
+				UserCardTableName,
+			),
+		)
 	}
 	if req.Group > 0 {
-		sqlBuilder = sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%d%%", req.Group))
+		sqlBuilder = sqlBuilder.Where(
+			fmt.Sprintf("`%s`.`group` like ?", UserCardTableName),
+			fmt.Sprintf("%%%d%%", req.Group),
+		)
 	}
 	if req.Retired == 1 {
 		sqlBuilder = sqlBuilder.Where("`retired` = ?", 1)
