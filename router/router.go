@@ -52,6 +52,9 @@ func init() {
 		// 更新用户信息
 		adminWithAuth.POST("/updateUser", service.UpdateUser)
 
+		// 创建用户
+		adminWithAuth.POST("/createUser", service.CreateUser)
+
 		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)
 		// 绑定主站账号
