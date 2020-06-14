@@ -32,7 +32,15 @@ func CreateUser(c *gin.Context) {
 	userInAuth.UID = c.Request.Header.Get("uid")
 	userToCreate.UID = helper.GenID()
 
-	userToCreate.Password = helper.GenCode()
+	password := helper.GenCode()
+	passwordHash, err := helper.CalcPassHash(password)
+	if err != nil {
+		j.ServerError(c, err)
+		return
+	}
+
+	userToCreate.Password = passwordHash
+
 	userCardToCreate.ID = helper.GenID()
 	userCardToCreate.UID = userToCreate.UID
 	userCardToCreate.Hide = 1
@@ -56,7 +64,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	err := models.GetDBHelper().Transaction(func(db *gorm.DB) error {
+	err = models.GetDBHelper().Transaction(func(db *gorm.DB) error {
 		// 更新该用户的组别信息
 		groups := []string{}
 		for _, group := range strings.Split(req.Group, ",") {
@@ -80,6 +88,11 @@ func CreateUser(c *gin.Context) {
 	if err != nil {
 		j.ServerError(c, err)
 		return
+	}
+
+	j.Data = map[string]interface{}{
+		"UID":  userToCreate.UID,
+		"pass": password,
 	}
 
 	j.ResponseOK(c)
