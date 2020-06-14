@@ -51,9 +51,11 @@ func init() {
 
 		// 更新用户信息
 		adminWithAuth.POST("/updateUser", service.UpdateUser)
+		adminWithAuth.POST("/user/update", service.UpdateUser)
 
 		// 创建用户
-		adminWithAuth.POST("/createUser", service.CreateUser)
+		adminWithAuth.POST("/user/create", service.CreateUser)
+		adminWithAuth.POST("/user-card/create", service.CreateUser)
 
 		// 重置密码
 		adminWithAuth.POST("/resetPass", service.ResetPass)
