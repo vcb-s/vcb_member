@@ -14,16 +14,11 @@ type createUserReq struct {
 	Group string `json:"group" form:"group" gorm:"column:group"`
 }
 
-// TableName 指示 User 表名
-func (m createUserReq) TableName() string {
-	return models.User{}.TableName()
-}
-
 // CreateUser 创建新的用户
 func CreateUser(c *gin.Context) {
 	var (
 		j                JSONData
-		req              updateUserReq
+		req              createUserReq
 		userInAuth       models.User
 		userToCreate     models.User
 		userCardToCreate models.UserCard
@@ -31,6 +26,8 @@ func CreateUser(c *gin.Context) {
 
 	userInAuth.UID = c.Request.Header.Get("uid")
 	userToCreate.UID = helper.GenID()
+	// 两次GenID之间必须存在一定延时，避免序号连续
+	// userCardToCreate.ID = helper.GenID()
 
 	password := helper.GenCode()
 	passwordHash, err := helper.CalcPassHash(password)
@@ -52,7 +49,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// 查询权限
-	if err := models.GetDBHelper().First(&userCardToCreate, "`id` = ?", userCardToCreate.UID).Error; err != nil {
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.UID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
