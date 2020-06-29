@@ -86,7 +86,10 @@ func UserCardList(c *gin.Context) {
 
 	// 有指定 CardID 时就忽略 KeyWord 参数
 	if len(req.CardID) > 0 {
-		sqlBuilder = sqlBuilder.Where("`id` = ?", req.CardID)
+		sqlBuilder = sqlBuilder.Where(fmt.Sprintf(
+			"`%s`.`id` = ?",
+			UserCardTableName,
+		), req.CardID)
 	} else if len(req.KeyWord) > 0 {
 		keyword := fmt.Sprintf("%%%s%%", req.KeyWord)
 		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ? OR `id` = ?", keyword, keyword, req.KeyWord)
@@ -102,7 +105,7 @@ func UserCardList(c *gin.Context) {
 
 	// 乱序
 	originUserCardListLen := len(userCardList)
-	if req.Sticky != 1 && req.Tiny != 1 && originUserCardListLen > 0 {
+	if req.Sticky != 1 && req.Tiny != 1 && originUserCardListLen > 1 {
 		// 没有筛选置顶，也就是数组需要乱序
 		// 如果筛选了置顶整个数组就是有顺序的
 		stickyUserList := make([]models.UserCard, 0)
