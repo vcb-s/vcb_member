@@ -21,7 +21,7 @@ func UpdateUserCard(c *gin.Context) {
 		userInAuth   models.User = models.User{}
 	)
 
-	userInAuth.UID = c.Request.Header.Get("uid")
+	userInAuth.ID = c.Request.Header.Get("uid")
 
 	if err := c.ShouldBind(&req); err != nil {
 		j.Message = err.Error()
@@ -36,13 +36,13 @@ func UpdateUserCard(c *gin.Context) {
 	}
 
 	// 查询权限
-	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.UID).Error; err != nil {
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.ID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
 
 	// 不是管理员且uid不匹配的话
-	if userToUpdate.UID != userInAuth.UID && !userInAuth.IsAdmin() {
+	if userToUpdate.UID != userInAuth.ID && !userInAuth.IsAdmin() {
 		j.Message = "不允许修改他人信息"
 		j.FailAuth(c)
 		return

@@ -28,8 +28,8 @@ func KickOff(c *gin.Context) {
 		return
 	}
 
-	userInAuth.UID = c.Request.Header.Get("uid")
-	userToKickOff.UID = req.UID
+	userInAuth.ID = c.Request.Header.Get("uid")
+	userToKickOff.ID = req.UID
 
 	groupsToRemove := map[string]bool{}
 	for _, group := range strings.Split(req.Group, ",") {
@@ -75,7 +75,7 @@ func KickOff(c *gin.Context) {
 		// 更新该用户的所有卡片
 		var userCards []models.UserCard
 
-		if err := db.Where(models.UserCard{UID: userToKickOff.UID}).Find(&userCards).Error; err != nil {
+		if err := db.Where(models.UserCard{UID: userToKickOff.ID}).Find(&userCards).Error; err != nil {
 			return err
 		}
 

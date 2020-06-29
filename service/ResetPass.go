@@ -32,12 +32,12 @@ func ResetPass(c *gin.Context) {
 
 	uidInAuth := c.Request.Header.Get("uid")
 	if len(req.UID) == 0 {
-		userToReset.UID = uidInAuth
+		userToReset.ID = uidInAuth
 	} else {
-		userToReset.UID = req.UID
+		userToReset.ID = req.UID
 	}
 
-	if err := models.GetDBHelper().First(&userToReset, "`id` = ?", userToReset.UID).Error; err != nil {
+	if err := models.GetDBHelper().First(&userToReset, "`id` = ?", userToReset.ID).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.BadRequest(c)
 			return
@@ -46,7 +46,7 @@ func ResetPass(c *gin.Context) {
 		return
 	}
 
-	if uidInAuth == userToReset.UID {
+	if uidInAuth == userToReset.ID {
 		userInAuth = userToReset
 	} else {
 		if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {

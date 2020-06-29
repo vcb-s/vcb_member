@@ -52,7 +52,9 @@ func UserCardList(c *gin.Context) {
 		1,
 	)
 
+	// 如果没有指定包括隐藏
 	if req.IncludeHide != 1 {
+		// 那就指定hide不包含1（是）
 		sqlBuilder = sqlBuilder.Not(`hide`, 1)
 	}
 	if req.Tiny == 1 {

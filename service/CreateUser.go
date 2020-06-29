@@ -11,7 +11,7 @@ import (
 )
 
 type createUserReq struct {
-	Group string `json:"group" form:"group" gorm:"column:group"`
+	Group []string `json:"group" form:"group" gorm:"column:group"`
 }
 
 // CreateUser 创建新的用户
@@ -24,8 +24,8 @@ func CreateUser(c *gin.Context) {
 		userCardToCreate models.UserCard
 	)
 
-	userInAuth.UID = c.Request.Header.Get("uid")
-	userToCreate.UID = helper.GenID()
+	userInAuth.ID = c.Request.Header.Get("uid")
+	userToCreate.ID = helper.GenID()
 	// 两次GenID之间必须存在一定延时，避免序号连续
 	// userCardToCreate.ID = helper.GenID()
 
@@ -39,7 +39,7 @@ func CreateUser(c *gin.Context) {
 	userToCreate.Password = passwordHash
 
 	userCardToCreate.ID = helper.GenID()
-	userCardToCreate.UID = userToCreate.UID
+	userCardToCreate.UID = userToCreate.ID
 	userCardToCreate.Hide = 1
 
 	if err := c.ShouldBind(&req); err != nil {
@@ -49,7 +49,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// 查询权限
-	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.UID).Error; err != nil {
+	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.ID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
@@ -63,12 +63,9 @@ func CreateUser(c *gin.Context) {
 
 	err = models.GetDBHelper().Transaction(func(db *gorm.DB) error {
 		// 更新该用户的组别信息
-		groups := []string{}
-		for _, group := range strings.Split(req.Group, ",") {
-			groups = append(groups, group)
-		}
-
-		userToCreate.Group = strings.Join(groups, ",")
+		userToCreate.Group = strings.Join(req.Group, ",")
+		userToCreate.Nickname = "新用户"
+		userCardToCreate.Nickname = userToCreate.Nickname
 		userCardToCreate.Group = userToCreate.Group
 
 		// 写入
@@ -88,8 +85,9 @@ func CreateUser(c *gin.Context) {
 	}
 
 	j.Data = map[string]interface{}{
-		"UID":  userToCreate.UID,
-		"pass": password,
+		"cardID": userCardToCreate.ID,
+		"UID":    userToCreate.ID,
+		"pass":   password,
 	}
 
 	j.ResponseOK(c)

@@ -28,7 +28,6 @@ func init() {
 	// 前台
 	{
 		root.GET("/user/list", service.UserCardList)
-		root.GET("/user/list/tiny", service.TinyUserCardList)
 		root.GET("/group/list", service.GroupList)
 	}
 

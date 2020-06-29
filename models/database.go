@@ -14,7 +14,7 @@ import (
 
 // User 用户表
 type User struct {
-	UID         string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID          string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
 	Password    string `json:"-" form:"-" gorm:"column:pass"`
 	Admin       string `json:"admin" form:"admin" gorm:"column:admin"`
 	Ban         int8   `json:"ban" form:"ban" gorm:"column:ban"`
@@ -42,7 +42,7 @@ func (m User) IsBan() bool {
 
 // CanManagePerson 是否可以管理对应用户
 func (m User) CanManagePerson(user User) bool {
-	result := !m.IsBan() && (m.UID == user.UID)
+	result := !m.IsBan() && (m.ID == user.ID)
 	if !result {
 		for _, groupID := range strings.Split(",", user.Group) {
 			if strings.Contains(m.Admin, groupID) {

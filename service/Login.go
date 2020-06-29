@@ -57,7 +57,7 @@ func Login(c *gin.Context) {
 	}
 
 	// 签发密钥
-	token, err := helper.GenToken(user.UID)
+	token, err := helper.GenToken(user.ID)
 	if err != nil {
 		j.ServerError(c, err)
 		return
