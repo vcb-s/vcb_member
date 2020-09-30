@@ -52,6 +52,8 @@ func init() {
 		adminWithAuth.POST("/user/create", service.CreateUser)
 		// 更新用户
 		adminWithAuth.POST("/user/update", service.UpdateUser)
+		// 拉组
+		adminWithAuth.POST("/user/group/add", service.AddGroup)
 		// 踢出
 		adminWithAuth.POST("/user/kickoff", service.KickOff)
 
