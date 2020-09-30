@@ -12,7 +12,9 @@ type updateUserReq struct {
 	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
 	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
 	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
-	Group    string `json:"group" form:"group" gorm:"column:group"`
+	// 组别修改走另一套逻辑，
+	// 因为组别有转入逻辑，有踢出逻辑，这些的权限判断都比较独立
+	// Group    []string `json:"group" form:"group" gorm:"column:group"`
 }
 
 // TableName 指示 User 表名
@@ -43,16 +45,15 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// 查询权限
+	// 查询授权用户
 	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.ID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
 
-	// 不是管理员且uid不匹配的话
-	if userToUpdate.ID != userInAuth.ID && !userInAuth.IsAdmin() {
-		j.Message = "不允许修改他人信息"
-		j.FailAuth(c)
+	if !userInAuth.CanManagePerson(userToUpdate) {
+		j.Message = "无权修改该用户"
+		j.BadRequest(c)
 		return
 	}
 
