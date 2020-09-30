@@ -45,26 +45,27 @@ func init() {
 		adminWithAuth := root.Group("/admin")
 		adminWithAuth.Use(AuthMiddleware)
 
-		// 查询用户信息及其卡片列表
+		// 查询该用户的个人信息及其可管理的卡片、用户
 		adminWithAuth.GET("/personInfo", service.PersonInfo)
-
-		// 更新用户信息
-		adminWithAuth.POST("/updateUser", service.UpdateUser)
-		adminWithAuth.POST("/user/update", service.UpdateUser)
 
 		// 创建用户
 		adminWithAuth.POST("/user/create", service.CreateUser)
+		// 更新用户
+		adminWithAuth.POST("/user/update", service.UpdateUser)
+		// 踢出
+		adminWithAuth.POST("/user/kickoff", service.KickOff)
+
+		// 创建用户卡片
 		adminWithAuth.POST("/user-card/create", service.CreateUserCard)
+		// 更新用户卡片
+		adminWithAuth.POST("/user-card/update", service.UpdateUserCard)
 
 		// 重置密码
-		adminWithAuth.POST("/resetPass", service.ResetPass)
+		adminWithAuth.POST("/password/reset", service.ResetPass)
 		// 绑定主站账号
-		adminWithAuth.POST("/createWPBind", service.CreateBindForWP)
+		adminWithAuth.POST("/bind-wp/create", service.CreateBindForWP)
 		// 解绑主站账号
-		adminWithAuth.POST("/deleteWPBind", service.DeleteWPBind)
-		// 修改自己或他人的卡片信息
-		adminWithAuth.POST("/updateUserCard", service.UpdateUserCard)
-		// 踢出
-		adminWithAuth.POST("/kickoff", service.KickOff)
+		adminWithAuth.POST("/bind-wp/delete", service.DeleteWPBind)
+
 	}
 }
