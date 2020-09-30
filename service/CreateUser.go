@@ -61,13 +61,20 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	err = models.GetDBHelper().Transaction(func(db *gorm.DB) error {
-		// 更新该用户的组别信息
-		userToCreate.Group = strings.Join(req.Group, ",")
-		userToCreate.Nickname = "新用户"
-		userCardToCreate.Nickname = userToCreate.Nickname
-		userCardToCreate.Group = userToCreate.Group
+	// 更新该用户的组别信息
+	userToCreate.Group = strings.Join(req.Group, ",")
+	userToCreate.Nickname = "新用户"
+	userCardToCreate.Nickname = userToCreate.Nickname
+	userCardToCreate.Group = userToCreate.Group
 
+	// 判断新用户的组别是否在认证用户范围内
+	if userInAuth.IsContainAllGroup(userToCreate) {
+		j.Message = "你只能添加你管理的组别"
+		j.FailAuth(c)
+		return
+	}
+
+	err = models.GetDBHelper().Transaction(func(db *gorm.DB) error {
 		// 写入
 		if err := db.Model(&userToCreate).Create(&userToCreate).Error; err != nil {
 			return err
