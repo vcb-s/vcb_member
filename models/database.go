@@ -42,15 +42,44 @@ func (m User) IsBan() bool {
 
 // CanManagePerson 是否可以管理对应用户
 func (m User) CanManagePerson(user User) bool {
-	result := !m.IsBan() && (m.ID == user.ID)
-	if !result {
-		for _, groupID := range strings.Split(",", user.Group) {
-			if strings.Contains(m.Admin, groupID) {
-				result = true
-			}
+	if m.IsBan() {
+		return false
+	}
+	if m.ID == user.ID {
+		return true
+	}
+
+	canManage := false
+	for _, groupID := range strings.Split(",", user.Group) {
+		if strings.Contains(m.Admin, groupID) {
+			canManage = true
 		}
 	}
-	return result
+
+	return canManage
+}
+
+// IsContainAllGroup 判断传入用户的组别是否是自己的子集
+func (m User) IsContainAllGroup(user User) bool {
+	if m.IsAdmin() {
+		return false
+	}
+	if m.IsBan() {
+		return false
+	}
+	if m.ID == user.ID {
+		return true
+	}
+
+	allContainer := true
+
+	for _, groupID := range strings.Split(",", user.Group) {
+		if !strings.Contains(m.Admin, groupID) {
+			allContainer = false
+		}
+	}
+
+	return allContainer
 }
 
 // UserCard 卡片表
