@@ -9,23 +9,25 @@ import (
 	"vcb_member/models"
 )
 
-type userListReq struct {
-	CardID      string `json:"id" form:"id"`
-	KeyWord     string `json:"keyword" form:"keyword"`
-	IncludeHide int    `json:"includeHide" form:"includeHide"`
-	Group       int    `json:"group" form:"group"`
-	Retired     int    `json:"retired" form:"retired"`
-	Sticky      int    `json:"sticky" form:"sticky"`
-	Current     int    `json:"page" form:"page"`
-	PageSize    int    `json:"pageSize" form:"pageSize"`
-	Tiny        int    `json:"tiny" form:"tiny"`
+type userCardListReq struct {
+	Current  int    `json:"page" form:"page"`
+	PageSize int    `json:"pageSize" form:"pageSize"`
+	CardID   string `json:"id" form:"id"`
+	KeyWord  string `json:"keyword" form:"keyword"`
+	Group    int    `json:"group" form:"group"`
+	Retired  int    `json:"retired" form:"retired"`
+	Sticky   int    `json:"sticky" form:"sticky"`
+	// 只返回 ID/UID/头像/昵称
+	Tiny int `json:"tiny" form:"tiny"`
+	// 把隐藏设置为1的也范围
+	IncludeHide int `json:"includeHide" form:"includeHide"`
 }
 
 // UserCardList 用户列表
 func UserCardList(c *gin.Context) {
 	var (
 		j            JSONData
-		req          userListReq
+		req          userCardListReq
 		userCardList = make([]models.UserCard, 0)
 	)
 	if err := c.ShouldBind(&req); err != nil {
@@ -85,12 +87,12 @@ func UserCardList(c *gin.Context) {
 	}
 
 	// 有指定 CardID 时就忽略 KeyWord 参数
-	if len(req.CardID) > 0 {
+	if req.CardID != "" {
 		sqlBuilder = sqlBuilder.Where(fmt.Sprintf(
 			"`%s`.`id` = ?",
 			UserCardTableName,
 		), req.CardID)
-	} else if len(req.KeyWord) > 0 {
+	} else if req.KeyWord != "" {
 		keyword := fmt.Sprintf("%%%s%%", req.KeyWord)
 		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ? OR `id` = ?", keyword, keyword, req.KeyWord)
 	}
