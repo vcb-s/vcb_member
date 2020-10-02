@@ -57,9 +57,7 @@ func GenToken(uid string) (string, error) {
 	claims.KeyID = GenID()
 
 	rdb, ctx := models.GetAuthCodeRedisHelper()
-	_, err := rdb.Set(ctx, claims.KeyID, claims.ID, 0).Result()
-
-	if err != nil {
+	if err := rdb.Set(ctx, claims.KeyID, claims.ID, 0).Err(); err != nil {
 		log.Error().Err(err).Str("用户UID", claims.ID).Msg("token签发期间无法写入redis")
 		return "", err
 	}
@@ -86,10 +84,10 @@ func CheckToken(token []byte) (string, error) {
 	if err != nil {
 		if err != redis.Nil {
 			return "", errors.New("token无效")
-		} else {
-			log.Error().Err(err).Msg("redis执行错误")
-			return "", errors.New("redis错误")
 		}
+
+		log.Error().Err(err).Msg("redis执行错误")
+		return "", errors.New("redis错误")
 	}
 	if claims.ID != UIDInRedis {
 		return "", errors.New("token无效")

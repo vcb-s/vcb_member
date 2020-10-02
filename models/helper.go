@@ -15,10 +15,10 @@ import (
 
 var dbInstance *gorm.DB
 var dbOnce sync.Once
-var redisOnce sync.Once
 
+var authcodeRedisOnce sync.Once
 var authcodeRedisInstance *redis.Client
-var redisContext = context.Background()
+var authCodeRedisContext = context.Background()
 
 func init() {
 	GetDBHelper()
@@ -68,10 +68,10 @@ func newDBHelper() *gorm.DB {
 
 // GetAuthCodeRedisHelper 获取redis实例
 func GetAuthCodeRedisHelper() (*redis.Client, context.Context) {
-	dbOnce.Do(func() {
+	authcodeRedisOnce.Do(func() {
 		newAuthCodeRedisHelper()
 	})
-	return authcodeRedisInstance, redisContext
+	return authcodeRedisInstance, authCodeRedisContext
 }
 func newAuthCodeRedisHelper() {
 	rdb := redis.NewClient(&redis.Options{
@@ -84,7 +84,7 @@ func newAuthCodeRedisHelper() {
 		DB:       0,                    // use default DB
 	})
 
-	_, err := rdb.Ping(redisContext).Result()
+	_, err := rdb.Ping(authCodeRedisContext).Result()
 	if err != nil {
 		log.Fatal().Err(err).Msg("redis ping error")
 		panic(err)
