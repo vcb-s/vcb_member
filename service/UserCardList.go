@@ -16,11 +16,14 @@ type userCardListReq struct {
 	KeyWord  string `json:"keyword" form:"keyword"`
 	Group    int    `json:"group" form:"group"`
 	Retired  int    `json:"retired" form:"retired"`
-	Sticky   int    `json:"sticky" form:"sticky"`
+	// 只返回置顶相关卡片
+	Sticky int `json:"sticky" form:"sticky"`
 	// 只返回 ID/UID/头像/昵称
 	Tiny int `json:"tiny" form:"tiny"`
 	// 把隐藏设置为1的也范围
 	IncludeHide int `json:"includeHide" form:"includeHide"`
+	// 不乱序
+	InOrder int `json:"inOrder" form:"inOrder"`
 }
 
 // UserCardList 用户列表
@@ -107,11 +110,10 @@ func UserCardList(c *gin.Context) {
 
 	// 乱序
 	originUserCardListLen := len(userCardList)
-	if req.Sticky != 1 && req.Tiny != 1 && originUserCardListLen > 1 {
-		// 没有筛选置顶，也就是数组需要乱序
-		// 如果筛选了置顶整个数组就是有顺序的
+	if req.InOrder != 1 && originUserCardListLen > 1 {
+		// 没有指定按序就是乱序
 		stickyUserList := make([]models.UserCard, 0)
-		lastStickyUserIndex := 0
+		lastStickyUserIndex := -1
 
 		// 找到置顶部分
 		for i := 0; i < originUserCardListLen; i++ {
