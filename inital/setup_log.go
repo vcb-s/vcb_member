@@ -29,15 +29,15 @@ func setupLog(file *os.File) {
 	log.Logger = log.
 		Output(
 			zerolog.MultiLevelWriter(
-				zerolog.ConsoleWriter{
-					Out:        os.Stderr,
-					TimeFormat: time.RFC3339,
-				},
+				// zerolog.ConsoleWriter{
+				// 	Out:        os.Stderr,
+				// 	TimeFormat: time.RFC3339,
+				// },
 				fileWritter,
 			),
 		).
 		With().
-		Timestamp().
+		// Timestamp().
 		Caller().
 		Logger()
 
