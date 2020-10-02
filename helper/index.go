@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/btnguyen2k/olaf"
+	"github.com/go-redis/redis/v8"
 	"github.com/matthewhartstonge/argon2"
 	"github.com/pascaldekloe/jwt"
+	"github.com/rs/zerolog/log"
 
 	"vcb_member/conf"
 	"vcb_member/models"
@@ -47,43 +49,24 @@ func GenCode() string {
 	return strconv.Itoa(mRand.Intn(9999-999) + 999)
 }
 
-// getUserTokenID 获取用户对应的tokenID，以此保持登录token稳定
-func getUserTokenID(uid string) string {
-	tokenID := Session.SearchByValue(AuthTokenNamespace, uid)
-
-	if len(tokenID) == 0 {
-		// 查询一次数据库，不考虑用户不存在的情况
-		var user models.User
-		models.GetDBHelper().First(&user, "id = ?", uid)
-
-		if len(user.LastTokenID) == 0 {
-			tokenID = GenID()
-			user.LastTokenID = tokenID
-			// 不处理错误，暂时没看到抛出的价值
-			// 即使出现错误也要王Session中存一个tokenID，防止击穿导致疯狂查数据库
-			models.GetDBHelper().Model(&user).Updates(&user)
-		} else {
-			tokenID = user.LastTokenID
-		}
-	}
-
-	Session.Set(AuthTokenNamespace, tokenID, uid)
-
-	return tokenID
-}
-
 // GenToken 获取一个jwt，不负责校验用户的合法性
 func GenToken(uid string) (string, error) {
 	var claims jwt.Claims
-	now := time.Now().Round(time.Second)
 	claims.Issuer = jwtIssuer
 	claims.ID = uid
-	claims.KeyID = getUserTokenID(uid)
-	claims.Issued = jwt.NewNumericTime(now)
-	claims.Expires = jwt.NewNumericTime(now.Add(jwtExpires))
+	claims.KeyID = GenID()
+
+	rdb, ctx := models.GetAuthCodeRedisHelper()
+	_, err := rdb.Set(ctx, claims.KeyID, claims.ID, 0).Result()
+
+	if err != nil {
+		log.Error().Err(err).Str("用户UID", claims.ID).Msg("token签发期间无法写入redis")
+		return "", err
+	}
 
 	token, err := claims.HMACSign(jwt.HS256, tokenSignKey)
 	if err != nil {
+		log.Error().Err(err).Str("用户UID", claims.ID).Msg("token签发错误")
 		return "", err
 	}
 
@@ -94,18 +77,22 @@ func GenToken(uid string) (string, error) {
 func CheckToken(token []byte) (string, error) {
 	claims, err := jwt.HMACCheck(token, tokenSignKey)
 	if err != nil {
-		return "", err
+		return "", errors.New("token无效")
 	}
-
-	if !claims.Valid((time.Now())) {
-		return "", errors.New(ErrorExpired)
-	}
-
-	sessionTokenID := getUserTokenID(claims.ID)
 
 	// 校验一次keyID
-	if sessionTokenID != claims.KeyID {
-		return "", errors.New(ErrorInvalid)
+	rdb, ctx := models.GetAuthCodeRedisHelper()
+	UIDInRedis, err := rdb.Get(ctx, claims.KeyID).Result()
+	if err != nil {
+		if err != redis.Nil {
+			return "", errors.New("token无效")
+		} else {
+			log.Error().Err(err).Msg("redis执行错误")
+			return "", errors.New("redis错误")
+		}
+	}
+	if claims.ID != UIDInRedis {
+		return "", errors.New("token无效")
 	}
 
 	return claims.ID, nil

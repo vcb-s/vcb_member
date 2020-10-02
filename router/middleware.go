@@ -10,13 +10,14 @@ import (
 // AuthMiddleware 登录检查以及token重签
 func AuthMiddleware(c *gin.Context) {
 	var j service.JSONData
-	originToken := []byte(c.GetHeader("X-Token"))
 
-	if cap(originToken) == 0 {
+	tokenHeader := c.GetHeader("X-Token")
+	if tokenHeader == "" {
 		j.Unauthorized(c)
 		return
 	}
 
+	originToken := []byte(tokenHeader)
 	uid, err := helper.CheckToken(originToken)
 	if err != nil {
 		j.Message = err.Error()

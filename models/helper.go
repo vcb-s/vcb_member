@@ -67,11 +67,11 @@ func newDBHelper() *gorm.DB {
 }
 
 // GetAuthCodeRedisHelper 获取redis实例
-func GetAuthCodeRedisHelper() context.Context {
+func GetAuthCodeRedisHelper() (*redis.Client, context.Context) {
 	dbOnce.Do(func() {
 		newAuthCodeRedisHelper()
 	})
-	return redisContext
+	return authcodeRedisInstance, redisContext
 }
 func newAuthCodeRedisHelper() {
 	rdb := redis.NewClient(&redis.Options{

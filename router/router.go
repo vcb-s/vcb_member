@@ -46,9 +46,6 @@ func init() {
 		adminWithAuth := root.Group("/admin")
 		adminWithAuth.Use(AuthMiddleware)
 
-		// 查询该用户的个人信息及其可管理的卡片、用户
-		// adminWithAuth.GET("/personInfo", service.PersonInfo)
-
 		// 创建用户
 		adminWithAuth.POST("/user/create", service.CreateUser)
 		// 更新用户
