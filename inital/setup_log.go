@@ -9,11 +9,18 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/diode"
 	"github.com/rs/zerolog/log"
+
+	"vcb_member/conf"
 )
 
 // setupLog 获取log文件句柄
 func setupLog(file *os.File) {
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	if conf.Main.Debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	}
 
 	fileWritter := diode.NewWriter(file, 1000, 10*time.Millisecond, func(missed int) {
 		log.Error().Msg("missed log: " + string(missed))

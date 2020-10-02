@@ -12,6 +12,7 @@ type wpAuth struct {
 }
 
 type conf struct {
+	Debug    bool
 	Database struct {
 		Host   string
 		Port   int
