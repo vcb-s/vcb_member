@@ -27,7 +27,8 @@ func init() {
 	root := Router.Group("vcbs_member_api")
 	// 前台
 	{
-		root.GET("/user/list", service.UserCardList)
+		root.GET("/user/list", service.UserList)
+		root.GET("/user-card/list", service.UserCardList)
 		root.GET("/group/list", service.GroupList)
 	}
 
