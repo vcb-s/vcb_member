@@ -1,15 +1,7 @@
 package models
 
 import (
-	"fmt"
-	"log"
 	"strings"
-	"sync"
-	"time"
-
-	"github.com/jinzhu/gorm"
-
-	"vcb_member/conf"
 )
 
 // User 用户表
@@ -143,46 +135,4 @@ type UserAssociation struct {
 // TableName 指示 UserAssociation 表名
 func (m UserAssociation) TableName() string {
 	return "login_association"
-}
-
-var instance *gorm.DB
-var once sync.Once
-
-func init() {
-	GetDBHelper()
-}
-
-// GetDBHelper 获取数据库实例
-func GetDBHelper() *gorm.DB {
-	once.Do(func() {
-		instance = newDBHelper()
-	})
-	return instance
-}
-
-func newDBHelper() *gorm.DB {
-	engine, err := gorm.Open("mysql", fmt.Sprintf(
-		"%v:%v@tcp([%v]:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
-		conf.Main.Database.User,
-		conf.Main.Database.Pass,
-		conf.Main.Database.Host,
-		conf.Main.Database.Port,
-		conf.Main.Database.Dbname,
-	))
-	if err != nil {
-		log.Fatalln("gorm err", err)
-	}
-	//test DB if connection
-	err = engine.DB().Ping()
-	if err != nil {
-		log.Fatalln("gorm Ping err", err)
-	}
-
-	//设置连接池
-	engine.DB().SetMaxIdleConns(10)           //空闲数大小
-	engine.DB().SetMaxOpenConns(100)          //最大打开连接数
-	engine.DB().SetConnMaxLifetime(time.Hour) //重用超时
-
-	engine.LogMode(true)
-	return engine
 }

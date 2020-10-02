@@ -20,6 +20,11 @@ type conf struct {
 		Pass   string
 		Dbname string
 	}
+	Redis struct {
+		Host string
+		Port int
+		Pass string
+	}
 	Jwt struct {
 		Mac string
 	}
@@ -46,5 +51,4 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
 }

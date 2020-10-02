@@ -7,6 +7,11 @@ user = 'root'
 pass = '0921'
 dbname = 'vcb_member'
 
+[redis]
+host = "127.0.0.1"
+port = 6379
+pass = ""
+
 [jwt]
 # key length must larger than 256
 # https://security.stackexchange.com/a/146889
