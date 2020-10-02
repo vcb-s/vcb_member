@@ -13,8 +13,7 @@ func init() {
 	setupMathSeed()
 	file, err = getLogFile()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open error log file")
-		panic("Failed to open error log file")
+		log.Panic().Err(err).Msg("Failed to open error log file")
 	}
 	setupLog(file)
 }
