@@ -47,6 +47,9 @@ func init() {
 		adminWithAuth.Use(AuthMiddleware)
 
 		// 创建用户
+		adminWithAuth.POST("/user/info", service.PersonInfo)
+
+		// 创建用户
 		adminWithAuth.POST("/user/create", service.CreateUser)
 		// 更新用户
 		adminWithAuth.POST("/user/update", service.UpdateUser)
