@@ -2,6 +2,7 @@ package conf
 
 import (
 	"io/ioutil"
+	"log"
 
 	"github.com/pelletier/go-toml"
 )
@@ -43,12 +44,14 @@ func init() {
 	tomlFile, err := ioutil.ReadFile("./config.toml")
 
 	if err != nil {
-		panic(err)
+		log.Print("Failed to open config.toml file")
+		log.Panic(err)
 	}
 
 	err = toml.Unmarshal(tomlFile, &Main)
 
 	if err != nil {
-		panic(err)
+		log.Print("Failed to open parse.toml file")
+		log.Panic(err)
 	}
 }
