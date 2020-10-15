@@ -80,14 +80,13 @@ func newAuthCodeRedisHelper() {
 			conf.Main.Redis.Host,
 			conf.Main.Redis.Port,
 		),
-		Password: conf.Main.Redis.Pass, // no password set
-		DB:       0,                    // use default DB
+		Password: conf.Main.Redis.Pass,
+		DB:       0,
 	})
 
 	_, err := rdb.Ping(authCodeRedisContext).Result()
 	if err != nil {
-		log.Fatal().Err(err).Msg("redis ping error")
-		panic(err)
+		log.Panic().Err(err).Msg("redis ping error")
 	}
 	authcodeRedisInstance = rdb
 }
