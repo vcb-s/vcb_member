@@ -37,12 +37,27 @@ func main() {
 		Handler: router.Router,
 	}
 
+	ginStartErrorDetect, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
 	go func() {
+		// server.ListenAndServe 会一直占用该线程
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error().Err(err).Msg("start server fail")
+			cancel()
 		}
-		log.Info().Msg("server started")
 	}()
+
+	select {
+	case <-ginStartErrorDetect.Done():
+		{
+			if ginStartErrorDetect.Err() == context.DeadlineExceeded {
+				log.Debug().Msg("gin started")
+			} else {
+				// err hs been handle by err != nil
+			}
+		}
+	}
 
 	// 退出监听
 	quit := make(chan os.Signal)
@@ -51,14 +66,25 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Info().Msg("Shuting down server...")
+	log.Debug().Msg("Shuting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("Server Shutdown With Error")
+		cancel()
 	}
 
-	log.Info().Msg("Server Shutdown Success")
+	select {
+	case <-shutdownCtx.Done():
+		{
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				log.Debug().Msg("Server Shutdown Success")
+			} else {
+				// err hs been handle by err != nil
+			}
+		}
+	}
+
 }
