@@ -15,6 +15,7 @@ func init() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to open error log file")
 	}
+	log.Debug().Msg("log file opened")
 	setupLog(file)
 }
 
