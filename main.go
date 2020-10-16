@@ -36,6 +36,7 @@ func main() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error().Err(err).Msg("start server fail")
 		}
+		log.Info().Msg("server started")
 	}()
 
 	// 退出监听
