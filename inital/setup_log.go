@@ -15,6 +15,7 @@ import (
 
 // setupLog 获取log文件句柄
 func setupLog(file *os.File) {
+	log.Debug().Bool("debug mode", conf.Main.Debug).Msg("current debug mode")
 
 	if conf.Main.Debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -26,25 +27,40 @@ func setupLog(file *os.File) {
 		log.Error().Msg("missed log: " + string(missed))
 	})
 
-	log.Logger = log.
-		Output(
-			zerolog.MultiLevelWriter(
-				// zerolog.ConsoleWriter{
-				// 	Out:        os.Stderr,
-				// 	TimeFormat: time.RFC3339,
-				// },
-				fileWritter,
-			),
-		).
-		With().
-		// Timestamp().
-		Caller().
-		Logger()
-
-	gin.DisableConsoleColor()
 	if conf.Main.Debug {
-		gin.DefaultWriter = io.MultiWriter(file, os.Stdout)
+		log.Logger = log.
+			Output(
+				zerolog.MultiLevelWriter(
+					zerolog.ConsoleWriter{
+						Out:        os.Stderr,
+						TimeFormat: time.RFC3339,
+					},
+					fileWritter,
+				),
+			).
+			With().
+			Timestamp().
+			Caller().
+			Logger()
 	} else {
+		log.Logger = log.
+			Output(
+				zerolog.MultiLevelWriter(
+					fileWritter,
+				),
+			).
+			With().
+			Timestamp().
+			Caller().
+			Logger()
+	}
+
+	if conf.Main.Debug {
+		gin.DefaultWriter = io.MultiWriter(os.Stdout)
+	} else {
+		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(file)
 	}
+
+	log.Debug().Msg("log setup success")
 }
