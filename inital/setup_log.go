@@ -41,8 +41,6 @@ func setupLog(file *os.File) {
 		Caller().
 		Logger()
 
-	log.Info().Msg("log test success")
-
 	gin.DisableConsoleColor()
 	if conf.Main.Debug {
 		gin.DefaultWriter = io.MultiWriter(file, os.Stdout)
