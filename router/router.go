@@ -1,9 +1,9 @@
 package router
 
 import (
-	// "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"vcb_member/conf"
 	"vcb_member/service"
 )
 
@@ -11,18 +11,11 @@ import (
 var Router *gin.Engine
 
 func init() {
-	gin.SetMode(gin.ReleaseMode)
-	Router = gin.Default()
+	if !conf.Main.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-	// config := cors.DefaultConfig()
-	// config.AllowWildcard = true
-	// config.AllowOrigins = []string{
-	// 	"http://localhost:*",
-	// }
-	// config.AllowHeaders = []string{
-	// 	"*",
-	// }
-	// Router.Use(cors.New(config))
+	Router = gin.Default()
 
 	root := Router.Group("vcbs_member_api")
 	// 前台
