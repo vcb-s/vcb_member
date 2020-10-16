@@ -20,20 +20,15 @@ var authcodeRedisOnce sync.Once
 var authcodeRedisInstance *redis.Client
 var authCodeRedisContext = context.Background()
 
-func init() {
-	GetDBHelper()
-	GetAuthCodeRedisHelper()
-}
-
 // GetDBHelper 获取数据库实例
 func GetDBHelper() *gorm.DB {
 	dbOnce.Do(func() {
-		dbInstance = newDBHelper()
+		newDBHelper()
 	})
 	return dbInstance
 }
 
-func newDBHelper() *gorm.DB {
+func newDBHelper() {
 	engine, err := gorm.Open("mysql", fmt.Sprintf(
 		"%v:%v@tcp([%v]:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
 		conf.Main.Database.User,
@@ -51,6 +46,7 @@ func newDBHelper() *gorm.DB {
 	if err != nil {
 		log.Panic().Err(err).Msg("gorm ping error")
 	}
+	log.Debug().Msg("main db started")
 
 	//设置连接池
 	engine.DB().SetMaxIdleConns(10)           //空闲数大小
@@ -63,7 +59,7 @@ func newDBHelper() *gorm.DB {
 	} else {
 		engine.LogMode(false)
 	}
-	return engine
+	dbInstance = engine
 }
 
 // GetAuthCodeRedisHelper 获取redis实例
@@ -88,5 +84,6 @@ func newAuthCodeRedisHelper() {
 	if err != nil {
 		log.Panic().Err(err).Msg("redis ping error")
 	}
+	log.Debug().Msg("redis started")
 	authcodeRedisInstance = rdb
 }

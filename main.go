@@ -23,8 +23,13 @@ import (
 func main() {
 	defer inital.Clean()
 
+	// 配置数据库连接注销
 	model := models.GetDBHelper()
 	defer model.Close()
+
+	// 配置redis连接注销
+	rbd, _ := models.GetAuthCodeRedisHelper()
+	defer rbd.Close()
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{
