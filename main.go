@@ -48,15 +48,9 @@ func main() {
 		}
 	}()
 
-	select {
-	case <-ginStartErrorDetect.Done():
-		{
-			if ginStartErrorDetect.Err() == context.DeadlineExceeded {
-				log.Debug().Msg("gin started")
-			} else {
-				// err hs been handle by err != nil
-			}
-		}
+	<-ginStartErrorDetect.Done()
+	if ginStartErrorDetect.Err() == context.DeadlineExceeded {
+		log.Debug().Msg("gin started")
 	}
 
 	// 退出监听
@@ -76,15 +70,8 @@ func main() {
 		cancel()
 	}
 
-	select {
-	case <-shutdownCtx.Done():
-		{
-			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Debug().Msg("Server Shutdown Success")
-			} else {
-				// err hs been handle by err != nil
-			}
-		}
+	<-shutdownCtx.Done()
+	if shutdownCtx.Err() == context.DeadlineExceeded {
+		log.Debug().Msg("Server Shutdown Success")
 	}
-
 }
