@@ -11,7 +11,8 @@ import (
 )
 
 type createUserReq struct {
-	Group []string `json:"group" form:"group" gorm:"column:group"`
+	UserNickName string   `json:"nickname" form:"nickname"`
+	Group        []string `json:"group" form:"group" binding:"required"`
 }
 
 // CreateUser 创建新的用户
@@ -23,6 +24,16 @@ func CreateUser(c *gin.Context) {
 		userToCreate     models.User
 		userCardToCreate models.UserCard
 	)
+
+	if req.UserNickName == "" {
+		req.UserNickName = "新用户"
+	}
+
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
 
 	userInAuth.ID = c.Request.Header.Get("uid")
 	userToCreate.ID = helper.GenID()
@@ -42,12 +53,6 @@ func CreateUser(c *gin.Context) {
 	userCardToCreate.UID = userToCreate.ID
 	userCardToCreate.Hide = 1
 
-	if err := c.ShouldBind(&req); err != nil {
-		j.Message = err.Error()
-		j.BadRequest(c)
-		return
-	}
-
 	// 查询权限
 	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", userInAuth.ID).Error; err != nil {
 		j.ServerError(c, err)
@@ -63,7 +68,7 @@ func CreateUser(c *gin.Context) {
 
 	// 更新该用户的组别信息
 	userToCreate.Group = strings.Join(req.Group, ",")
-	userToCreate.Nickname = "新用户"
+	userToCreate.Nickname = req.UserNickName
 	userCardToCreate.Nickname = userToCreate.Nickname
 	userCardToCreate.Group = userToCreate.Group
 
