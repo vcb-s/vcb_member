@@ -36,11 +36,11 @@ func KickOff(c *gin.Context) {
 		groupsToRemove[group] = true
 	}
 
-	if err := models.GetDBHelper().Where(userToKickOff).First(&userInAuth).Error; err != nil {
+	if err := models.GetDBHelper().Where(userInAuth).First(&userInAuth).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
-	if err := models.GetDBHelper().Where(userInAuth).First(&userToKickOff).Error; err != nil {
+	if err := models.GetDBHelper().Where(userToKickOff).First(&userToKickOff).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
