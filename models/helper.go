@@ -54,7 +54,7 @@ func newDBHelper() {
 	engine.DB().SetConnMaxLifetime(time.Hour) //重用超时
 
 	if conf.Main.Debug {
-		engine.SetLogger(&log.Logger)
+		// engine.SetLogger(&log.Logger)
 		engine.LogMode(true)
 	} else {
 		engine.LogMode(false)
