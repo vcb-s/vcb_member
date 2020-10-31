@@ -1,6 +1,7 @@
 package service
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -35,11 +36,11 @@ func AddGroup(c *gin.Context) {
 	userInAuth.ID = c.Request.Header.Get("uid")
 	userToPullIn.ID = req.UID
 
-	if err := models.GetDBHelper().Where(userToPullIn).First(&userInAuth).Error; err != nil {
+	if err := models.GetDBHelper().Where(userInAuth).First(&userInAuth).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
-	if err := models.GetDBHelper().Where(userInAuth).First(&userToPullIn).Error; err != nil {
+	if err := models.GetDBHelper().Where(userToPullIn).First(&userToPullIn).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
@@ -58,11 +59,16 @@ func AddGroup(c *gin.Context) {
 		}
 	}
 
+	// 排序一次组别
+	sort.Slice(nextGroups, func(i, j int) bool {
+		return nextGroups[i] < nextGroups[j]
+	})
+
 	userToPullIn.Group = strings.Join(nextGroups, ",")
 	updateBuilder := models.GetDBHelper().Model(&req)
 
 	// 修改键值
-	if err := updateBuilder.Updates(&userToPullIn).Error; err != nil {
+	if err := updateBuilder.Model(&userToPullIn).Where("id = ?", userToPullIn.ID).Update("group", userToPullIn.Group).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
