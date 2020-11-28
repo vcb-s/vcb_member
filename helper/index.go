@@ -102,7 +102,8 @@ func CheckToken(token []byte) (string, error) {
 		}
 
 		log.Error().Err(err).Msg("redis执行错误")
-		return "", errors.New("redis错误")
+		// 上边的 redis.Nil 貌似判断有点问题，暂时先直接都当作token错误
+		return "", errors.New("token错误")
 	}
 	if claims.ID != UIDInRedis {
 		return "", errors.New("token无效")
