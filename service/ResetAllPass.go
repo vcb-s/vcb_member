@@ -12,10 +12,12 @@ import (
 
 type resetAllPassReq struct {
 	NewPassword string `json:"new" form:"new"`
+	Real        bool   `json:"real" form:"real"`
 }
 
 type miniUser struct {
 	ID            string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	Nickname      string `json:"nickname" form:"nickname" gorm:"column:nickname"`
 	Password      string `json:"-" form:"-" gorm:"column:pass"`
 	PasswordInStr string `json:"pass" form:"pass" gorm:"-"`
 }
@@ -59,7 +61,7 @@ func ResetAllPass(c *gin.Context) {
 	allUsers := []miniUser{}
 
 	// 获取所有用户
-	models.GetDBHelper().Select("id").Find(&allUsers)
+	models.GetDBHelper().Find(&allUsers)
 	// tableName := allUsers[0].TableName()
 
 	// 更新所有用户
@@ -73,6 +75,10 @@ func ResetAllPass(c *gin.Context) {
 			}
 
 			allUsers[idx].Password = pass
+
+			if !req.Real {
+				continue
+			}
 
 			if errForSQL := db.Model(&allUsers[idx]).Update(&allUsers[idx]).Error; errForSQL != nil {
 				return errForSQL
