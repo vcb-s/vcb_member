@@ -39,7 +39,7 @@ func init() {
 		adminWithAuth := root.Group("/admin")
 		adminWithAuth.Use(AuthMiddleware)
 
-		// 创建用户
+		// 用户信息
 		adminWithAuth.POST("/user/info", service.PersonInfo)
 
 		// 创建用户
@@ -58,6 +58,8 @@ func init() {
 
 		// 重置密码
 		adminWithAuth.POST("/password/reset", service.ResetPass)
+		// 重置全员密码，仅全组别管理员可用
+		adminWithAuth.POST("/password/reset/all", service.ResetAllPass)
 		// 绑定主站账号
 		adminWithAuth.POST("/bind-wp/create", service.CreateBindForWP)
 		// 解绑主站账号

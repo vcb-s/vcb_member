@@ -4,6 +4,7 @@ import (
 	"errors"
 	mRand "math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/btnguyen2k/olaf"
@@ -47,6 +48,20 @@ func GenID() string {
 // GenCode 获取一个四位随机数
 func GenCode() string {
 	return strconv.Itoa(mRand.Intn(9999-999) + 999)
+}
+
+// 可用于生成密码的字符
+var passbase = strings.Split("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0987654321", "")
+var passbaseLen = len(passbase)
+
+// GenPass 获取一个六位随机大小写数字密码
+func GenPass() string {
+	pass := [6]string{}
+	for idx := range pass {
+		pass[idx] = passbase[mRand.Intn(passbaseLen)]
+	}
+
+	return strings.Join(pass[:], "")
 }
 
 // GenToken 获取一个jwt，不负责校验用户的合法性
