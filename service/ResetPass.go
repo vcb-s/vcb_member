@@ -12,7 +12,6 @@ import (
 
 type resetPassReq struct {
 	UID         string `json:"uid" form:"uid"`
-	Current     string `json:"current" form:"current"`
 	NewPassword string `json:"new" form:"new"`
 }
 
@@ -37,7 +36,7 @@ func ResetPass(c *gin.Context) {
 		userToReset.ID = req.UID
 	}
 
-	if err := models.GetDBHelper().First(&userToReset, "`id` = ?", userToReset.ID).Error; err != nil {
+	if err := models.GetDBHelper().First(&userToReset).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			j.BadRequest(c)
 			return
@@ -49,7 +48,8 @@ func ResetPass(c *gin.Context) {
 	if uidInAuth == userToReset.ID {
 		userInAuth = userToReset
 	} else {
-		if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
+		userInAuth.ID = uidInAuth
+		if err := models.GetDBHelper().First(&userInAuth).Error; err != nil {
 			if gorm.IsRecordNotFoundError(err) {
 				j.BadRequest(c)
 				return
@@ -58,11 +58,9 @@ func ResetPass(c *gin.Context) {
 			return
 		}
 		if !userInAuth.CanManagePerson(userToReset) {
-			if !helper.CheckPassHash(req.Current, userInAuth.Password) {
-				j.Message = "密码错误"
-				j.FailAuth(c)
-				return
-			}
+			j.Message = "你只能修改本组组员密码"
+			j.FailAuth(c)
+			return
 		}
 	}
 

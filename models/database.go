@@ -41,7 +41,7 @@ func (m User) CanManagePerson(user User) bool {
 	}
 
 	canManage := false
-	for _, groupID := range strings.Split(",", user.Group) {
+	for _, groupID := range strings.Split(user.Group, ",") {
 		if strings.Contains(m.Admin, groupID) {
 			canManage = true
 		}
@@ -64,7 +64,7 @@ func (m User) IsContainAllGroup(user User) bool {
 
 	allContainer := true
 
-	for _, groupID := range strings.Split(",", user.Group) {
+	for _, groupID := range strings.Split(user.Group, ",") {
 		if !strings.Contains(m.Admin, groupID) {
 			allContainer = false
 		}
