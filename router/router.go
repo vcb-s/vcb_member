@@ -48,8 +48,10 @@ func init() {
 		adminWithAuth.POST("/user/update", service.UpdateUser)
 		// 拉组
 		adminWithAuth.POST("/user/group/add", service.AddGroup)
-		// 踢出
+		// 离组
 		adminWithAuth.POST("/user/kickoff", service.KickOff)
+		// 退休
+		adminWithAuth.POST("/user/retire", service.Retire)
 
 		// 创建用户卡片
 		adminWithAuth.POST("/user-card/create", service.CreateUserCard)
