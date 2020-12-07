@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"vcb_member/helper"
 	"vcb_member/models"
@@ -16,7 +16,7 @@ type resetAllPassReq struct {
 }
 
 type miniUser struct {
-	ID            string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID            string `json:"id" form:"id" gorm:"primaryKey;column:id"`
 	Nickname      string `json:"nickname" form:"nickname" gorm:"column:nickname"`
 	Password      string `json:"-" form:"-" gorm:"column:pass"`
 	PasswordInStr string `json:"pass" form:"pass" gorm:"-"`
@@ -44,7 +44,7 @@ func ResetAllPass(c *gin.Context) {
 	uidInAuth := c.Request.Header.Get("uid")
 
 	if err := models.GetDBHelper().First(&userInAuth, "`id` = ?", uidInAuth).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err == gorm.ErrRecordNotFound {
 			j.BadRequest(c)
 			return
 		}
@@ -80,7 +80,7 @@ func ResetAllPass(c *gin.Context) {
 				continue
 			}
 
-			if errForSQL := db.Model(&allUsers[idx]).Update(&allUsers[idx]).Error; errForSQL != nil {
+			if errForSQL := db.Model(&allUsers[idx]).Updates(&allUsers[idx]).Error; errForSQL != nil {
 				return errForSQL
 			}
 		}

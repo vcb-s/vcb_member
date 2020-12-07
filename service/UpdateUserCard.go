@@ -8,7 +8,7 @@ import (
 
 type updateCardReq struct {
 	models.UserCard
-	ID  string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
+	ID  string `json:"id" form:"id" gorm:"primaryKey;column:id" binding:"required"`
 	UID string `json:"-" form:"-" gorm:"column:uid"`
 }
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"vcb_member/helper"
 	"vcb_member/models"
@@ -37,7 +37,7 @@ func ResetPass(c *gin.Context) {
 	}
 
 	if err := models.GetDBHelper().First(&userToReset).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err == gorm.ErrRecordNotFound {
 			j.BadRequest(c)
 			return
 		}
@@ -50,7 +50,7 @@ func ResetPass(c *gin.Context) {
 	} else {
 		userInAuth.ID = uidInAuth
 		if err := models.GetDBHelper().First(&userInAuth).Error; err != nil {
-			if gorm.IsRecordNotFoundError(err) {
+			if err == gorm.ErrRecordNotFound {
 				j.BadRequest(c)
 				return
 			}

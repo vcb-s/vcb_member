@@ -7,7 +7,7 @@ import (
 )
 
 type updateUserReq struct {
-	UID      string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id" binding:"required"`
+	UID      string `json:"id" form:"id" gorm:"primaryKey;column:id" binding:"required"`
 	Admin    string `json:"admin" form:"admin" gorm:"column:admin"`
 	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
 	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`

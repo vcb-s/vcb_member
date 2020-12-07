@@ -6,9 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm/logger"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/jinzhu/gorm"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 
 	"vcb_member/conf"
 )
@@ -23,43 +26,68 @@ var authCodeRedisContext = context.Background()
 // GetDBHelper 获取数据库实例
 func GetDBHelper() *gorm.DB {
 	dbOnce.Do(func() {
-		newDBHelper()
+		initDBHelper()
 	})
 	return dbInstance
 }
 
-func newDBHelper() {
-	engine, err := gorm.Open("mysql", fmt.Sprintf(
+type customDBLogWriter struct{}
+
+func (c customDBLogWriter) Printf(msg string, data ...interface{}) {
+	log.Printf(msg, data...)
+}
+
+func initDBHelper() {
+	dsn := fmt.Sprintf(
 		"%v:%v@tcp([%v]:%v)/%v?charset=utf8mb4&parseTime=true&loc=Local",
 		conf.Main.Database.User,
 		conf.Main.Database.Pass,
 		conf.Main.Database.Host,
 		conf.Main.Database.Port,
 		conf.Main.Database.Dbname,
-	))
+	)
+
+	customDBLogger := logger.New(
+		customDBLogWriter{},
+		logger.Config{
+			SlowThreshold: 200 * time.Millisecond,
+			LogLevel:      logger.Warn,
+			Colorful:      true,
+		},
+	)
+
+	if conf.Main.Debug {
+		customDBLogger = customDBLogger.LogMode(logger.Info)
+	}
+
+	dbConfig := gorm.Config{
+		Logger: customDBLogger,
+	}
+
+	engine, err := gorm.Open(mysql.Open(dsn), &dbConfig)
 	if err != nil {
-		log.Panic().Err(err).Msg("gorm auth error")
+		log.Panic().Err(err).Msg("gorm open error")
+	}
+
+	sqlDB, err := engine.DB()
+	if err != nil {
+		log.Panic().Err(err).Msg("gorm get DB flag error")
 	}
 
 	//test DB if connection
-	err = engine.DB().Ping()
+	err = sqlDB.Ping()
 	if err != nil {
 		log.Panic().Err(err).Msg("gorm ping error")
 	}
-	log.Debug().Msg("main db started")
 
 	//设置连接池
-	engine.DB().SetMaxIdleConns(10)           //空闲数大小
-	engine.DB().SetMaxOpenConns(100)          //最大打开连接数
-	engine.DB().SetConnMaxLifetime(time.Hour) //重用超时
+	sqlDB.SetMaxIdleConns(5)            //空闲数大小
+	sqlDB.SetMaxOpenConns(50)           //最大打开连接数
+	sqlDB.SetConnMaxLifetime(time.Hour) //重用超时
 
-	if conf.Main.Debug {
-		// engine.SetLogger(&log.Logger)
-		engine.LogMode(true)
-	} else {
-		engine.LogMode(false)
-	}
 	dbInstance = engine
+
+	log.Debug().Msg("main db started")
 }
 
 // GetAuthCodeRedisHelper 获取redis实例

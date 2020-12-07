@@ -9,8 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-
 	"vcb_member/conf"
 	"vcb_member/inital"
 
@@ -25,7 +23,11 @@ func main() {
 
 	// 配置数据库连接注销
 	model := models.GetDBHelper()
-	defer model.Close()
+	sqlDB, err := model.DB()
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to open get sqlDB in defer close")
+	}
+	defer sqlDB.Close()
 
 	// 配置redis连接注销
 	rbd, _ := models.GetAuthCodeRedisHelper()

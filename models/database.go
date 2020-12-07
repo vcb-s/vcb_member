@@ -6,7 +6,7 @@ import (
 
 // User 用户表
 type User struct {
-	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID       string `json:"id" form:"id" gorm:"primaryKey;column:id"`
 	Password string `json:"-" form:"-" gorm:"column:pass"`
 	Admin    string `json:"admin" form:"admin" gorm:"column:admin"`
 	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
@@ -75,7 +75,7 @@ func (m User) IsContainAllGroup(user User) bool {
 
 // UserCard 卡片表
 type UserCard struct {
-	ID       string `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID       string `json:"id" form:"id" gorm:"primaryKey;column:id"`
 	UID      string `json:"uid" form:"uid" gorm:"column:uid"`
 	Group    string `json:"group" form:"group" gorm:"column:group"`
 	Order    int    `json:"order" form:"order" gorm:"column:order"`
@@ -105,7 +105,7 @@ func (m UserCard) IsHide() bool {
 
 // UserCardGroup 组别表
 type UserCardGroup struct {
-	ID   int    `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID   int    `json:"id" form:"id" gorm:"primaryKey;column:id"`
 	Name string `json:"name" form:"name" gorm:"column:name"`
 }
 
@@ -124,7 +124,7 @@ const (
 
 // UserAssociation 绑定授权表
 type UserAssociation struct {
-	ID       string              `json:"id" form:"id" gorm:"PRIMARY_KEY;column:id"`
+	ID       string              `json:"id" form:"id" gorm:"primaryKey;column:id"`
 	UID      string              `json:"uid" form:"uid" gorm:"column:uid"`
 	AuthCode string              `json:"association" form:"association" gorm:"column:auth"`
 	Type     UserAssociationType `json:"type" form:"type" gorm:"column:type"`

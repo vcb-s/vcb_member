@@ -100,7 +100,7 @@ func UserCardList(c *gin.Context) {
 		sqlBuilder = sqlBuilder.Where("`bio` like ? OR `nickname` like ? OR `id` = ?", keyword, keyword, req.KeyWord)
 	}
 
-	total := 0
+	total := int64(0)
 
 	err := sqlBuilder.Find(&userCardList).Count(&total).Error
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 
 type createUserCardReq struct {
 	models.UserCard
-	ID  string `json:"-" form:"-" gorm:"PRIMARY_KEY;column:id"`
+	ID  string `json:"-" form:"-" gorm:"primaryKey;column:id"`
 	UID string `json:"-" form:"-" gorm:"column:uid"`
 }
 

@@ -1,6 +1,7 @@
 package inital
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -24,7 +25,7 @@ func setupLog(file *os.File) {
 	}
 
 	fileWritter := diode.NewWriter(file, 1000, 10*time.Millisecond, func(missed int) {
-		log.Error().Msg("missed log: " + string(missed))
+		log.Error().Msg("missed log: " + fmt.Sprint(missed))
 	})
 
 	if conf.Main.Debug {
@@ -39,8 +40,6 @@ func setupLog(file *os.File) {
 				),
 			).
 			With().
-			Timestamp().
-			Caller().
 			Logger()
 	} else {
 		log.Logger = log.
@@ -50,8 +49,6 @@ func setupLog(file *os.File) {
 				),
 			).
 			With().
-			Timestamp().
-			Caller().
 			Logger()
 	}
 

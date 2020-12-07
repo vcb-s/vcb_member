@@ -56,8 +56,8 @@ func PersonInfo(c *gin.Context) {
 		return
 	}
 
-	cardTotal := 0
-	userTotal := 0
+	cardTotal := int64(0)
+	userTotal := int64(0)
 	{
 		var sqlBuilder = models.GetDBHelper().Where("`uid` = ?", uidInRequest)
 

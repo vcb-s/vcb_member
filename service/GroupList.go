@@ -14,7 +14,7 @@ func GroupList(c *gin.Context) {
 
 	userGroupList := make([]models.UserCardGroup, 0)
 
-	total := 0
+	total := int64(0)
 
 	if err := models.GetDBHelper().Find(&userGroupList).Count(&total).Error; err != nil {
 		j.ServerError(c, err)

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/btnguyen2k/olaf"
+	"github.com/btnguyen2k/consu/olaf"
 	"github.com/go-redis/redis/v8"
 	"github.com/matthewhartstonge/argon2"
 	"github.com/pascaldekloe/jwt"

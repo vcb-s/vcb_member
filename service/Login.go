@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"vcb_member/helper"
 	"vcb_member/models"
@@ -27,7 +27,7 @@ func Login(c *gin.Context) {
 	}
 
 	if err := models.GetDBHelper().First(&user, "`id` = ?", req.UID).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err == gorm.ErrRecordNotFound {
 			j.Message = "用户不存在"
 			j.NotAcceptable(c)
 			return

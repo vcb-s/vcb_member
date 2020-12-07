@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"vcb_member/helper"
 	"vcb_member/models"
@@ -46,7 +46,7 @@ func LoginFromWP(c *gin.Context) {
 	// 根据主站ID在第三方绑定表查找
 	err = models.GetDBHelper().Where("type = ? AND association = ?", models.UserAssociationTypeWP, strconv.Itoa(userInWP.ID)).First(&association).Error
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err == gorm.ErrRecordNotFound {
 			j.Message = "没有找到用户"
 			j.FailAuth(c)
 			return
