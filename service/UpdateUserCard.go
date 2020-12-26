@@ -56,6 +56,10 @@ func UpdateUserCard(c *gin.Context) {
 		return
 	}
 
+	j.Data = map[string]interface{}{
+		"ID": userToUpdate.ID,
+	}
+
 	j.ResponseOK(c)
 	return
 }
