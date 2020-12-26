@@ -16,27 +16,30 @@ type createUserCardReq struct {
 // CreateUserCard 创建新的用户卡片
 func CreateUserCard(c *gin.Context) {
 	var (
-		j                JSONData
-		userToBind       models.User
-		userCardToCreate models.UserCard
+		j          JSONData
+		req        createUserCardReq
+		userToBind models.User
 	)
+
+	if err := c.ShouldBind(&req); err != nil {
+		j.Message = err.Error()
+		j.BadRequest(c)
+		return
+	}
+
+	userCardToCreate := req
 
 	UID := c.Request.Header.Get("uid")
 
 	userToBind.ID = UID
-
-	userCardToCreate.ID = helper.GenID()
-	userCardToCreate.Hide = 1
 
 	if err := models.GetDBHelper().Model(&userToBind).First(&userToBind, "id = ?", UID).Error; err != nil {
 		j.ServerError(c, err)
 		return
 	}
 
+	userCardToCreate.ID = helper.GenID()
 	userCardToCreate.UID = UID
-	userCardToCreate.Avast = userToBind.Avast
-	userCardToCreate.Nickname = userToBind.Nickname
-	userCardToCreate.Group = userToBind.Group
 
 	if err := models.GetDBHelper().Model(&userCardToCreate).Create(&userCardToCreate).Error; err != nil {
 		j.ServerError(c, err)
