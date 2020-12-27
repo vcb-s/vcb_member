@@ -13,6 +13,7 @@ type userCardListReq struct {
 	Current  int    `json:"page" form:"page"`
 	PageSize int    `json:"pageSize" form:"pageSize"`
 	CardID   string `json:"id" form:"id"`
+	UID      string `json:"uid" form:"uid"`
 	KeyWord  string `json:"keyword" form:"keyword"`
 	Group    int    `json:"group" form:"group"`
 	Retired  int    `json:"retired" form:"retired"`
@@ -77,6 +78,12 @@ func UserCardList(c *gin.Context) {
 		sqlBuilder = sqlBuilder.Where(
 			fmt.Sprintf("`%s`.`group` like ?", UserCardTableName),
 			fmt.Sprintf("%%%d%%", req.Group),
+		)
+	}
+	if req.UID != "" {
+		sqlBuilder = sqlBuilder.Where(
+			fmt.Sprintf("`%s`.`uid` = ?", UserCardTableName),
+			req.UID,
 		)
 	}
 	if req.Retired == 1 {
