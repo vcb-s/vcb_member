@@ -1,8 +1,6 @@
 package service
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -10,8 +8,8 @@ import (
 )
 
 type retireReq struct {
-	UID   string `json:"uid" form:"uid" binding:"required"`
-	Group string `json:"group" form:"group" binding:"required"`
+	UID    string `json:"uid" form:"uid" binding:"required"`
+	CardID string `json:"cardID" form:"cardID"`
 }
 
 type userCardIOnlyID struct {
@@ -27,7 +25,7 @@ func (m userCardIOnlyID) TableName() string {
 func Retire(c *gin.Context) {
 	var (
 		j            JSONData
-		req          kickOffReq
+		req          retireReq
 		userToRetire models.User
 		userInAuth   models.User
 	)
@@ -39,11 +37,6 @@ func Retire(c *gin.Context) {
 
 	userInAuth.ID = c.Request.Header.Get("uid")
 	userToRetire.ID = req.UID
-
-	groupsToRemove := map[string]bool{}
-	for _, group := range strings.Split(req.Group, ",") {
-		groupsToRemove[group] = true
-	}
 
 	if err := models.GetDBHelper().Where(userInAuth).First(&userInAuth).Error; err != nil {
 		j.ServerError(c, err)
@@ -61,17 +54,21 @@ func Retire(c *gin.Context) {
 	}
 
 	err := models.GetDBHelper().Transaction(func(db *gorm.DB) error {
-		// 更新该用户的所有卡片
-		var userCards []userCardIOnlyID
+		// 等待更新的卡片ID
+		var cardIDs []string = []string{req.CardID}
 
-		if err := db.Where(models.UserCard{UID: userToRetire.ID}).Find(&userCards).Error; err != nil {
-			return err
-		}
+		// 如果没有指定ID
+		if req.CardID == "" {
+			// 更新该用户的所有卡片
+			var userCards []userCardIOnlyID
 
-		var cardIDs []string
+			if err := db.Where(models.UserCard{UID: userToRetire.ID}).Find(&userCards).Error; err != nil {
+				return err
+			}
 
-		for _, card := range userCards {
-			cardIDs = append(cardIDs, card.ID)
+			for _, card := range userCards {
+				cardIDs = append(cardIDs, card.ID)
+			}
 		}
 
 		if err := db.Model(&models.UserCard{}).Where(`id IN ?`, cardIDs).Updates(models.UserCard{Retired: 1}).Error; err != nil {
