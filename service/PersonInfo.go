@@ -73,8 +73,12 @@ func PersonInfo(c *gin.Context) {
 		var sqlBuilder = models.GetDBHelper()
 		groupsBelongUser := strings.Split(userInRequest.Admin, ",")
 
-		for _, group := range groupsBelongUser {
-			sqlBuilder = sqlBuilder.Or("`group` like ?", fmt.Sprintf("%%%s%%", group))
+		for idx, group := range groupsBelongUser {
+			if idx == 0 {
+				sqlBuilder = sqlBuilder.Where("`group` like ?", fmt.Sprintf("%%%s%%", group))
+			} else {
+				sqlBuilder = sqlBuilder.Or("`group` like ?", fmt.Sprintf("%%%s%%", group))
+			}
 		}
 
 		if err := sqlBuilder.Find(&userList).Count(&userTotal).Error; err != nil {
