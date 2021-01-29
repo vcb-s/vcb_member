@@ -57,6 +57,8 @@ func init() {
 		adminWithAuth.POST("/user-card/create", service.CreateUserCard)
 		// 更新用户卡片
 		adminWithAuth.POST("/user-card/update", service.UpdateUserCard)
+		// 删除用户卡片
+		adminWithAuth.POST("/user-card/delete", service.DeleteUserCard)
 
 		// 重置密码
 		adminWithAuth.POST("/password/reset", service.ResetPass)
