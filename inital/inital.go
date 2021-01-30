@@ -23,7 +23,7 @@ func init() {
 // 日志轮转
 func setupRotatingLog() {
 	lastDate = time.Now().Format(dateFormat)
-	ticker = time.NewTicker(time.Minute)
+	ticker = time.NewTicker(time.Hour)
 
 	for range ticker.C {
 		currentDate := time.Now().Format(dateFormat)
