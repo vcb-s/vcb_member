@@ -2,15 +2,16 @@ package inital
 
 import (
 	"os"
+
+	"github.com/rs/zerolog/log"
 )
 
-var logFile *os.File
-var logFileError error
-
 // getLogFile 获取log文件句柄
-func getLogFile() (*os.File, error) {
-	if logFile == nil {
-		logFile, logFileError = os.OpenFile("log/log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+func getLogFile(currentDate string) *os.File {
+	logFile, logFileError := os.OpenFile("log/"+currentDate+".txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if logFileError != nil {
+		log.Panic().Err(err).Str("currentDate", currentDate).Msg("Failed to open error log file")
+
 	}
-	return logFile, logFileError
+	return logFile
 }
