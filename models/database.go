@@ -6,13 +6,14 @@ import (
 
 // User 用户表
 type User struct {
-	ID       string `json:"id" form:"id" gorm:"primaryKey;column:id"`
-	Password string `json:"-" form:"-" gorm:"column:pass"`
-	Admin    string `json:"admin" form:"admin" gorm:"column:admin"`
-	Ban      int8   `json:"ban" form:"ban" gorm:"column:ban"`
-	Avast    string `json:"avast" form:"avast" gorm:"column:avast"`
-	Nickname string `json:"nickname" form:"nickname" gorm:"column:nickname"`
-	Group    string `json:"group" form:"group" gorm:"column:group"`
+	ID         string `json:"id" form:"id" gorm:"primaryKey;column:id"`
+	Password   string `json:"-" form:"-" gorm:"column:pass"`
+	Admin      string `json:"admin" form:"admin" gorm:"column:admin"`
+	Ban        int8   `json:"ban" form:"ban" gorm:"column:ban"`
+	SuperAdmin int8   `json:"-" form:"-" gorm:"column:super_admin"`
+	Avast      string `json:"avast" form:"avast" gorm:"column:avast"`
+	Nickname   string `json:"nickname" form:"nickname" gorm:"column:nickname"`
+	Group      string `json:"group" form:"group" gorm:"column:group"`
 	SoftDeletedModel
 }
 
@@ -26,6 +27,11 @@ func (m User) IsAdmin() bool {
 	return len(m.Admin) > 0
 }
 
+// IsAdmin 是否是超管
+func (m User) IsSuperAdmin() bool {
+	return m.SuperAdmin == 1
+}
+
 // IsBan 是否是被封禁用户
 func (m User) IsBan() bool {
 	return m.Ban == 1
@@ -36,6 +42,18 @@ func (m User) CanManagePerson(user User) bool {
 	if m.IsBan() {
 		return false
 	}
+
+	// 如果自己是还没被禁用的超管,放行
+	if m.IsSuperAdmin() {
+		return true
+	}
+
+	// 除非是超管,否则不能操作管理员
+	// 因为 目前 前端 采用纯uid方式来进行操作
+	if user.IsAdmin() {
+		return false
+	}
+
 	if m.ID == user.ID {
 		return true
 	}
