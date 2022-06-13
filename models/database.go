@@ -37,10 +37,39 @@ func (m User) IsBan() bool {
 	return m.Ban == 1
 }
 
+// CanAccessPerson 是否可以查看对应用户
+func (m User) CanAccessPerson(user User) bool {
+	if m.IsBan() {
+		return false
+	}
+
+	if m.ID == user.ID {
+		return true
+	}
+
+	// 如果自己是还没被禁用的超管,放行
+	if m.IsSuperAdmin() {
+		return true
+	}
+
+	canManage := false
+	for _, groupID := range strings.Split(user.Group, ",") {
+		if strings.Contains(m.Admin, groupID) {
+			canManage = true
+		}
+	}
+
+	return canManage
+}
+
 // CanManagePerson 是否可以管理对应用户
 func (m User) CanManagePerson(user User) bool {
 	if m.IsBan() {
 		return false
+	}
+
+	if m.ID == user.ID {
+		return true
 	}
 
 	// 如果自己是还没被禁用的超管,放行
@@ -52,10 +81,6 @@ func (m User) CanManagePerson(user User) bool {
 	// 因为 目前 前端 采用纯uid方式来进行操作
 	if user.IsAdmin() {
 		return false
-	}
-
-	if m.ID == user.ID {
-		return true
 	}
 
 	canManage := false

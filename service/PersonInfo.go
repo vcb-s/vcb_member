@@ -50,7 +50,7 @@ func PersonInfo(c *gin.Context) {
 		return
 	}
 
-	if !userInAuth.CanManagePerson(userInRequest) {
+	if !userInAuth.CanAccessPerson(userInRequest) {
 		j.Message = "你无权获取该用户信息"
 		j.BadRequest(c)
 		return
