@@ -66,5 +66,4 @@ func Login(c *gin.Context) {
 	c.Writer.Header().Set("X-Token", token)
 
 	j.ResponseOK(c)
-	return
 }

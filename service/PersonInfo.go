@@ -100,5 +100,4 @@ func PersonInfo(c *gin.Context) {
 		},
 	}
 	j.ResponseOK(c)
-	return
 }

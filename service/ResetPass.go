@@ -91,5 +91,4 @@ func ResetPass(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

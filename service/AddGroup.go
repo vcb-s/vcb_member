@@ -74,5 +74,4 @@ func AddGroup(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

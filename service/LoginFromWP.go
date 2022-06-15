@@ -64,5 +64,4 @@ func LoginFromWP(c *gin.Context) {
 	c.Writer.Header().Set("token", token)
 
 	j.ResponseOK(c)
-	return
 }

@@ -61,5 +61,4 @@ func UpdateUserCard(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

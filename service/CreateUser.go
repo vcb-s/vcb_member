@@ -103,5 +103,4 @@ func CreateUser(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

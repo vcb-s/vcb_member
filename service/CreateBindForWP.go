@@ -82,5 +82,4 @@ func CreateBindForWP(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

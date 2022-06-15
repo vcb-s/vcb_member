@@ -23,5 +23,4 @@ func GroupList(c *gin.Context) {
 
 	j.Data = map[string]interface{}{"res": userGroupList, "total": total}
 	j.ResponseOK(c)
-	return
 }

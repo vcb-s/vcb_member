@@ -77,5 +77,4 @@ func UserList(c *gin.Context) {
 
 	j.Data = map[string]interface{}{"res": userCardList, "total": total}
 	j.ResponseOK(c)
-	return
 }

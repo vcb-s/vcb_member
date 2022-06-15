@@ -51,5 +51,4 @@ func CreateUserCard(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }

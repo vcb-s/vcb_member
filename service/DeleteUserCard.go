@@ -64,5 +64,4 @@ func DeleteUserCard(c *gin.Context) {
 	}
 
 	j.ResponseOK(c)
-	return
 }
