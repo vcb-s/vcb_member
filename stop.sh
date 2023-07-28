@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 PID=$(cat ./pid_num)
-echo $PID
-running=$(ps aux | grep $PID)
-if [ "$running" != "" ]
+echo "finding process $PID status"
+if ps -p $PID > /dev/null
 then
-    kill $PID
-    echo "stop "
+    echo "$PID is running."
+    kill "$PID"
+    echo "$PID stoped."
 else
-    echo "not running "
+    echo "not running"
 fi
