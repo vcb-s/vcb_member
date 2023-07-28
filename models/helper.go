@@ -87,7 +87,7 @@ func initDBHelper() {
 
 	dbInstance = engine
 
-	log.Debug().Msg("main db started")
+	log.Info().Msg("main db started")
 }
 
 // GetAuthCodeRedisHelper 获取redis实例
@@ -112,6 +112,6 @@ func newAuthCodeRedisHelper() {
 	if err != nil {
 		log.Panic().Err(err).Msg("redis ping error")
 	}
-	log.Debug().Msg("redis started")
+	log.Info().Msg("redis started")
 	authcodeRedisInstance = rdb
 }

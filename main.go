@@ -52,7 +52,7 @@ func main() {
 
 	<-ginStartErrorDetect.Done()
 	if ginStartErrorDetect.Err() == context.DeadlineExceeded {
-		log.Debug().Msg("gin started")
+		log.Info().Msg("gin started")
 	}
 
 	// 退出监听
@@ -62,7 +62,7 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Debug().Msg("Shuting down server...")
+	log.Info().Msg("Shuting down server...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -74,6 +74,6 @@ func main() {
 
 	<-shutdownCtx.Done()
 	if shutdownCtx.Err() == context.DeadlineExceeded {
-		log.Debug().Msg("Server Shutdown Success")
+		log.Info().Msg("Server Shutdown Success")
 	}
 }

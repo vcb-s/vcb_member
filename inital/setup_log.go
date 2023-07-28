@@ -16,12 +16,13 @@ import (
 
 // setupLog 获取log文件句柄
 func setupLog(file *os.File) {
-	log.Debug().Bool("debug mode", conf.Main.Debug).Msg("current debug mode")
+	log.Info().Bool("debug mode", conf.Main.Debug).Msg("current debug mode")
 
+	// 低于某个level的log不会记录
 	if conf.Main.Debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
 	} else {
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
 	fileWritter := diode.NewWriter(file, 1000, 10*time.Millisecond, func(missed int) {
@@ -59,5 +60,5 @@ func setupLog(file *os.File) {
 		gin.DefaultWriter = io.MultiWriter(file)
 	}
 
-	log.Debug().Msg("log setup success")
+	log.Info().Msg("log setup success")
 }
