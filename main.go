@@ -30,8 +30,7 @@ func main() {
 	defer sqlDB.Close()
 
 	// 配置token store销毁
-	db := models.GetAuthTokenStore()
-	defer db.Close()
+	tokenStore := models.GetAuthTokenStore()
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{
@@ -66,6 +65,11 @@ func main() {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
+	if err = tokenStore.Close(); err != nil {
+		log.Error().Err(err).Msg("tokenStore shutdown With Error")
+		cancel()
+	}
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("Server Shutdown With Error")
