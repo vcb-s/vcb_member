@@ -27,7 +27,6 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to open get sqlDB in defer close")
 	}
-	defer sqlDB.Close()
 
 	// 配置token store销毁
 	tokenStore := models.GetAuthTokenStore()
@@ -66,7 +65,12 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	if err = tokenStore.Close(); err != nil {
+	if err := sqlDB.Close(); err != nil {
+		log.Error().Err(err).Msg("sql shutdown With Error")
+		cancel()
+	}
+
+	if err := tokenStore.Close(); err != nil {
 		log.Error().Err(err).Msg("tokenStore shutdown With Error")
 		cancel()
 	}
