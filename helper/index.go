@@ -1,17 +1,21 @@
 package helper
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	cRand "crypto/rand"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	mRand "math/rand"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/btnguyen2k/consu/olaf"
-	"github.com/go-redis/redis/v8"
+	badger "github.com/dgraph-io/badger/v4"
 	"github.com/matthewhartstonge/argon2"
-	"github.com/pascaldekloe/jwt"
-	"github.com/rs/zerolog/log"
 
 	"vcb_member/conf"
 	"vcb_member/models"
@@ -64,62 +68,150 @@ func GenPass() string {
 	return strings.Join(pass[:], "")
 }
 
-// GenToken 获取一个jwt，不负责校验用户的合法性
-func GenToken(uid string) (string, error) {
-	var claims jwt.Claims
-	claims.Issuer = jwtIssuer
-	claims.ID = uid
-	claims.KeyID = GenID()
+var encKey []byte
 
-	rdb, ctx := models.GetAuthCodeRedisHelper()
-	if err := rdb.Set(ctx, claims.KeyID, claims.ID, 0).Err(); err != nil {
-		log.Error().Err(err).Str("用户UID", claims.ID).Msg("token签发期间无法写入redis")
-		return "", err
-	}
-
-	token, err := claims.HMACSign(jwt.HS256, tokenSignKey)
-	if err != nil {
-		log.Error().Err(err).Str("用户UID", claims.ID).Msg("token签发错误")
-		return "", err
-	}
-
-	return string(token), nil
-}
-
-// CheckToken 检查jwt
-func CheckToken(token []byte) (string, error) {
-	claims, err := jwt.HMACCheck(token, tokenSignKey)
-	if err != nil {
-		return "", errors.New("token无效")
-	}
-
-	// 校验一次keyID
-	rdb, ctx := models.GetAuthCodeRedisHelper()
-	UIDInRedis, err := rdb.Get(ctx, claims.KeyID).Result()
-	if err != nil {
-		if err != redis.Nil {
-			return "", errors.New("token无效")
+func getEncKey() ([]byte, error) {
+	if len(encKey) == 0 {
+		key, err := hex.DecodeString(conf.Main.Token.Key)
+		if err != nil {
+			return nil, err
 		}
 
-		log.Error().Err(err).Msg("redis执行错误")
-		// 上边的 redis.Nil 貌似判断有点问题，暂时先直接都当作token错误
-		return "", errors.New("token错误")
+		if len(key) != (256 / 8) {
+			return nil, errors.New("key should be 32 bytes len")
+		}
+
+		encKey = key
 	}
-	if claims.ID != UIDInRedis {
+
+	return encKey, nil
+}
+
+// enc aes-256 encrypt
+func enc(plaintext []byte) ([]byte, error) {
+	key, err := getEncKey()
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	aead, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce, err := genNonce(aead.NonceSize())
+	if err != nil {
+		return nil, err
+	}
+
+	return aead.Seal( /** 让 密文 append 在 nonce 后边，简化书写 */ nonce, nonce, plaintext, nil), nil
+}
+
+// dec aes-256 decrypt
+func dec(ciphertext []byte) ([]byte, error) {
+	key, err := getEncKey()
+	if err != nil {
+		return nil, err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	aead, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonceSize := aead.NonceSize()
+
+	if len(ciphertext) < nonceSize {
+		return nil, errors.New("ciphertext too short")
+	}
+
+	return aead.Open(nil, ciphertext[:nonceSize], ciphertext[nonceSize:], nil)
+}
+
+// genNonce 产生一个AES nonce
+func genNonce(nonceSize int) ([]byte, error) {
+	nonce := make([]byte, nonceSize)
+	_, err := cRand.Read(nonce)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nonce, nil
+}
+
+// GenToken 签署一个token
+func GenToken(uidStr string) (string, error) {
+	uid := []byte(uidStr)
+
+	token, err := enc(uid)
+	if err != nil {
+		return "", err
+	}
+
+	tokenStore := models.GetAuthTokenStore()
+	err = tokenStore.Update(func(txn *badger.Txn) error {
+		return txn.Set(uid, token)
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return base64.URLEncoding.Strict().EncodeToString(token), nil
+}
+
+// CheckToken 校验一个token
+func CheckToken(tokenStr string) (string, error) {
+	ciphertext, err := base64.URLEncoding.Strict().DecodeString(tokenStr)
+	if err != nil {
+		return "", errors.New("token解码失败")
+	}
+
+	uid, err := dec(ciphertext)
+	if err != nil {
 		return "", errors.New("token无效")
 	}
 
-	return claims.ID, nil
+	tokenStore := models.GetAuthTokenStore()
+	err = tokenStore.View(func(txn *badger.Txn) error {
+		item, err := txn.Get(uid)
+		if err != nil {
+			return err
+		}
+
+		err = item.Value(func(val []byte) error {
+			if reflect.DeepEqual(val, ciphertext) {
+				return nil
+			}
+
+			return errors.New("token已失效")
+		})
+
+		return err
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(uid), nil
 }
 
 // CalcPassHash 获取一个安全的密码Hash
 func CalcPassHash(pass string) (string, error) {
 	result, err := defaultArgon2.HashRaw([]byte(pass))
-	if err == nil {
-		return string(result.Encode()), nil
+	if err != nil {
+		return "", err
 	}
 
-	return "", err
+	return string(result.Encode()), nil
 }
 
 // CheckPassHash 校验密码
@@ -136,3 +228,15 @@ func CheckPassHash(pass string, hash string) bool {
 
 	return ok
 }
+
+// /** GenCRandKey 生成指定长度的密码学随机key */
+// func GenCRandKey(byteLen int) string {
+// 	r := make([]byte, byteLen)
+// 	_, err := cRand.Read(r)
+
+// 	if err != nil {
+// 		log.Panic().Err(err)
+// 	}
+
+// 	return hex.EncodeToString(r)
+// }

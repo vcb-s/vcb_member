@@ -11,14 +11,13 @@ import (
 func AuthMiddleware(c *gin.Context) {
 	var j service.JSONData
 
-	tokenHeader := c.GetHeader("X-Token")
-	if tokenHeader == "" {
+	tokenStr := c.GetHeader("X-Token")
+	if tokenStr == "" {
 		j.Unauthorized(c)
 		return
 	}
 
-	originToken := []byte(tokenHeader)
-	uid, err := helper.CheckToken(originToken)
+	uid, err := helper.CheckToken(tokenStr)
 	if err != nil {
 		j.Message = err.Error()
 		j.FailAuth(c)

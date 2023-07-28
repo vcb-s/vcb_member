@@ -29,9 +29,9 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	// 配置redis连接注销
-	rbd, _ := models.GetAuthCodeRedisHelper()
-	defer rbd.Close()
+	// 配置token store销毁
+	db := models.GetAuthTokenStore()
+	defer db.Close()
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{

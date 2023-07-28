@@ -19,6 +19,10 @@ pass = ""
 # for detecte if it a not a wrong decode, leave some cjk here: 我爱你, inori.
 mac = "n#:^`R$^A:=,pbTN&$dX#R2F'(yG-Q--"
 
+[token]
+# 256 / 8 = 32 bytes
+key = "edcc0ae70505724beb0b0ff422f434b4b3c3c80f91c740e5a5e7aa7dc25b5376"
+
 [server]
 port = 80
 

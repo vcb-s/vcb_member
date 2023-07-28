@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -9,7 +8,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm/logger"
 
-	"github.com/go-redis/redis/v8"
+	badger "github.com/dgraph-io/badger/v4"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
@@ -19,9 +18,8 @@ import (
 var dbInstance *gorm.DB
 var dbOnce sync.Once
 
-var authcodeRedisOnce sync.Once
-var authcodeRedisInstance *redis.Client
-var authCodeRedisContext = context.Background()
+var authTokenStoreOnce sync.Once
+var authTokenStore *badger.DB
 
 // GetDBHelper 获取数据库实例
 func GetDBHelper() *gorm.DB {
@@ -90,28 +88,17 @@ func initDBHelper() {
 	log.Info().Msg("main db started")
 }
 
-// GetAuthCodeRedisHelper 获取redis实例
-func GetAuthCodeRedisHelper() (*redis.Client, context.Context) {
-	authcodeRedisOnce.Do(func() {
-		newAuthCodeRedisHelper()
-	})
-	return authcodeRedisInstance, authCodeRedisContext
-}
-func newAuthCodeRedisHelper() {
-	rdb := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf(
-			"%v:%v",
-			conf.Main.Redis.Host,
-			conf.Main.Redis.Port,
-		),
-		Password: conf.Main.Redis.Pass,
-		DB:       0,
+/** 获取鉴权token store */
+func GetAuthTokenStore() *badger.DB {
+	authTokenStoreOnce.Do(func() {
+		// newAuthCodeRedisHelper()
+		db, err := badger.Open(badger.DefaultOptions("./kv/token"))
+		if err != nil {
+			log.Panic().Err(err).Msg("badger初始化失败")
+		}
+
+		authTokenStore = db
 	})
 
-	_, err := rdb.Ping(authCodeRedisContext).Result()
-	if err != nil {
-		log.Panic().Err(err).Msg("redis ping error")
-	}
-	log.Info().Msg("redis started")
-	authcodeRedisInstance = rdb
+	return authTokenStore
 }
