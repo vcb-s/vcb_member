@@ -43,11 +43,6 @@ func setupLog(file *os.File) {
 		log.Error().Msg("missed log: " + fmt.Sprint(missed))
 	})
 
-	cleanup()
-
-	lastLogFile = file
-	lastFileWriter = fileWritter
-
 	if conf.Main.Debug {
 		log.Logger = log.
 			Output(
@@ -80,4 +75,9 @@ func setupLog(file *os.File) {
 	}
 
 	log.Info().Msg("log setup success")
+
+	cleanup()
+
+	lastLogFile = file
+	lastFileWriter = fileWritter
 }
