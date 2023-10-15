@@ -20,6 +20,7 @@
         }
     ],
     "require": {
+        "php": ">=8.2",
         "leafs/aloe": "dev-master",
         "illuminate/console": "^8.75",
         "leafs/blade": "*",
