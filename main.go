@@ -27,11 +27,9 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to open get sqlDB in defer close")
 	}
-	defer sqlDB.Close()
 
-	// 配置redis连接注销
-	rbd, _ := models.GetAuthCodeRedisHelper()
-	defer rbd.Close()
+	// 配置token store销毁
+	tokenStore := models.GetAuthTokenStore()
 
 	addr := fmt.Sprintf(":%d", conf.Main.Server.Port)
 	server := &http.Server{
@@ -66,6 +64,16 @@ func main() {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
+	if err := sqlDB.Close(); err != nil {
+		log.Error().Err(err).Msg("sql shutdown With Error")
+		cancel()
+	}
+
+	if err := tokenStore.Close(); err != nil {
+		log.Error().Err(err).Msg("tokenStore shutdown With Error")
+		cancel()
+	}
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("Server Shutdown With Error")

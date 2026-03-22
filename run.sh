@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
-nohup ./main > main.log   &
-LOVE_PID=$!
-echo $LOVE_PID>pid_num
+echo "starting app by $(whoami)"
+
+nohup ./main > main.log &
+sleep 1 # just make console log order more normal
+app_pid=$!
+echo $app_pid > pid_num
+
+echo 'start success'

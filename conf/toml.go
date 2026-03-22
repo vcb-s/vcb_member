@@ -29,6 +29,9 @@ type conf struct {
 	Jwt struct {
 		Mac string
 	}
+	Token struct {
+		Key string
+	}
 	Server struct {
 		Port int
 	}
